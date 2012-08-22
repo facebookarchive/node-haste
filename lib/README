@@ -1,0 +1,59 @@
+
+
+                              ____________________________
+                                                            .OOo
+                                                            OOOOL
+                                   __________________    .. JOOO?
+                                                      .eSSSSSS**'
+                                                    gSSSSSSSSSS    6.
+                                                    oo  SSSSSSSs  .G
+                                       ___________   oo SSSSSSSSSgG
+                                                      *ISSSSSS  **
+                                                       SSSSSSS
+                                                     .oYSSSSSY.
+                                                     OOOOOOOOOOOg
+                                                    .OOOOT**TOOOOO.
+                         ______________________    .OOOO'     'OOOOO.
+                                                  .OOOO'         OOOO'
+                                               .oOOOO*        .OOOO*
+                                             .OOOOO''       .OOOOO
+                                          .JOOOO*         .##OOO'
+                                         C##?/             T##I
+                                          Y#|                'V
+     Node Haste ________________________   C
+
+
+
+Node Haste is a dependency management system for static resources for node.js
+
+
+HOW DOES IT WORK?
+
+The goal of node haste is to build/update a map of static resources in given
+directories. For that it scans provided directories for static resources: JS,
+CSS, Images, Tests, etc. Once the resources are found haste compares mtimes to
+the resources in an existing map. It also checks for package.json configuration
+changes. It then starts parsing all affected files to extract useful
+information: dependencies, processing options, size, etc.
+Once scanned it will update the map with the new data.
+
+
+EXAMPLE
+
+  var finder = new FileFinder({
+    scanDirs: '.',
+    extensions: ['.js', '.css', '.json']
+  });
+  var types = new ResourceTypes([JS, CSS, ProjectConfiguration]);
+  var serializer = new ResourceMapSerializer(types);
+  serializer.loadFromPath('.cache', function(err, map) {
+    new MapUpdateTask(finder, types, map).on('complete', function() {
+      console.log(map);
+    });
+  });
+
+
+TESTING
+
+  npm install jasmine-node
+  jasmine-node --matchall __tests__/
