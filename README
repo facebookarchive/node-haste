@@ -29,7 +29,7 @@ Node Haste is a dependency management system for static resources for node.js
 
 HOW DOES IT WORK?
 
-The goal of node haste is to build/update a map of static resources in given
+The goal of node haste is to build or update a map of static resources in given
 directories. For that it scans provided directories for static resources: JS,
 CSS, Images, Tests, etc. Once the resources are found haste compares mtimes to
 the resources in an existing map. It also checks for package.json configuration
@@ -40,20 +40,32 @@ Once scanned it will update the map with the new data.
 
 EXAMPLE
 
+  // where and what files to search for
   var finder = new FileFinder({
     scanDirs: '.',
     extensions: ['.js', '.css', '.json']
   });
+
+  // what types to analyze
   var types = new ResourceTypes([JS, CSS, ProjectConfiguration]);
+
+  // load existing cache
   var serializer = new ResourceMapSerializer(types);
   serializer.loadFromPath('.cache', function(err, map) {
+
+    // run an update task to scan and analyze changed files
     new MapUpdateTask(finder, types, map).on('complete', function() {
-      console.log(map);
+
+      // map will be updated at this point
+      console.log(map.getResource('JS', 'foo').requiredCSS);
     });
   });
 
 
 TESTING
+
+Node haste is covered with unit tests. The unit tests use Jasmine. Any
+compatible runner can be used to run the tests.
 
   npm install jasmine-node
   jasmine-node --matchall __tests__/
