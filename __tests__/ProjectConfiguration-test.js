@@ -74,6 +74,22 @@ describe('ProjectConfiguration', function() {
     });
   });
 
+  it('should translate require within haste paths', function() {
+    var path = require('path');
+    spyOn(path, 'existsSync').andCallFake(function(path) {
+      return true;
+    });
+    var resource = new ProjectConfiguration(
+      'project1/package.json',
+      { haste: { directories: ['lib', 'main']} });
+
+    expect(resource.resolveRequireSync('./a', 'project1/main.js'))
+      .toBe('./a');
+    expect(resource.resolveRequireSync('./lib/b', 'project1/main.js'))
+      .toBe('project1/b');
+    expect(resource.resolveRequireSync('./main/b', 'project1/main.js'))
+      .toBe('project1/b');
+  });
 
   it('should resolve index', function() {
     var path = require('path');
@@ -84,6 +100,16 @@ describe('ProjectConfiguration', function() {
     expectResolve(resource, './a', 'a/b/c/d.js', function(v) {
       expect(v).toBe('b/c/a/index');
     });
+  });
+
+  it('should resolve index sync', function() {
+    var path = require('path');
+    spyOn(path, 'existsSync').andCallFake(function(path) {
+      return path === 'a/b/c/a/index.js';
+    });
+    var resource = new ProjectConfiguration('a/b/package.json', {});
+    expect(resource.resolveRequireSync('./a', 'a/b/c/d.js'))
+      .toBe('b/c/a/index');
   });
 
   it('should resolve 0 paths', function() {
