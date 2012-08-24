@@ -6,9 +6,11 @@
 describe("MapUpdateTask", function() {
   var MapUpdateTask = require('../lib/MapUpdateTask');
   var Resource = require('../lib/resource/Resource');
+  var ResourceLoader = require('../lib/loader/ResourceLoader');
   var ResourceMap = require('../lib/ResourceMap');
   var ProjectConfiguration = require('../lib/resource/ProjectConfiguration');
-  var ResourceTypes = require('../lib/ResourceTypes');
+  var ProjectConfigurationLoader =
+    require('../lib/loader/ProjectConfigurationLoader');
 
   function createFinderSpy(data) {
     var finder = createSpyObj('FileFinder', ['find']);
@@ -55,7 +57,10 @@ describe("MapUpdateTask", function() {
       addMtime(1200000000000, new Resource('changed.js')),
       addMtime(1300000000000, new Resource('unmodified.js'))
     ]);
-    var task = new MapUpdateTask(finder, new ResourceTypes([]), map);
+    var task = new MapUpdateTask(
+      finder,
+      [],
+      map);
     var changed;
 
     runs(function() {
@@ -88,7 +93,10 @@ describe("MapUpdateTask", function() {
       addMtime(1300000000000, new Resource('p1/b/2.js')),
       addMtime(1300000000000, new ProjectConfiguration('p1/package.json', {}))
     ]);
-    var task = new MapUpdateTask(finder, new ResourceTypes([]), map);
+    var task = new MapUpdateTask(
+      finder,
+      [],
+      map);
     var changed;
 
     runs(function() {
@@ -123,7 +131,7 @@ describe("MapUpdateTask", function() {
         haste: { directories: ['a'] }
       }))
     ]);
-    var task = new MapUpdateTask(finder, new ResourceTypes([]), map);
+    var task = new MapUpdateTask(finder, [], map);
     var changed;
 
     runs(function() {
@@ -155,13 +163,14 @@ describe("MapUpdateTask", function() {
       addMtime(1300000000000, new Resource('p1/a/1.js')),
       addMtime(1300000000000, new Resource('p1/b/2.js'))
     ]);
-    spyOn(ProjectConfiguration, 'loadFromPath')
-      .andCallFake(function(configuration, path, callback) {
+    var configurationLoader = new ProjectConfigurationLoader();
+    spyOn(configurationLoader, 'loadFromPath')
+      .andCallFake(function(path, configuration, callback) {
         callback(
           new ProjectConfiguration('p1/package.json', {}));
       });
 
-    var task = new MapUpdateTask(finder, new ResourceTypes([]), map);
+    var task = new MapUpdateTask(finder, [configurationLoader], map);
     var changed;
 
     runs(function() {
@@ -197,13 +206,14 @@ describe("MapUpdateTask", function() {
         haste: { directories: ['a'] }
       }))
     ]);
-    spyOn(ProjectConfiguration, 'loadFromPath')
-      .andCallFake(function(configuration, path, callback) {
+    var configurationLoader = new ProjectConfigurationLoader();
+    spyOn(configurationLoader, 'loadFromPath')
+      .andCallFake(function(path, configuration, callback) {
         callback(
           new ProjectConfiguration('p1/package.json', {}));
       });
 
-    var task = new MapUpdateTask(finder, new ResourceTypes([]), map);
+    var task = new MapUpdateTask(finder, [configurationLoader], map);
     var changed;
 
     runs(function() {
@@ -239,15 +249,16 @@ describe("MapUpdateTask", function() {
         haste: { directories: ['a'] }
       }))
     ]);
-    spyOn(ProjectConfiguration, 'loadFromPath')
-      .andCallFake(function(configuration, path, callback) {
+    var configurationLoader = new ProjectConfigurationLoader();
+    spyOn(configurationLoader, 'loadFromPath')
+      .andCallFake(function(path, configuration, callback) {
         callback(
           new ProjectConfiguration('p1/package.json', {
             haste: { directories: ['a'] }
           }));
       });
 
-    var task = new MapUpdateTask(finder, new ResourceTypes([]), map);
+    var task = new MapUpdateTask(finder, [configurationLoader], map);
     var changed;
 
     runs(function() {

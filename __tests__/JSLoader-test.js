@@ -3,24 +3,26 @@
  * @emails javascript@lists.facebook.com voloko@fb.com
  */
 
-describe('JSLite', function() {
+describe('JSLoader', function() {
   var path = require('path');
-  var JS = require('../lib/resource/JSLite');
+  var JSLoader = require('../lib/loader/JSLoader');
   var ProjectConfiguration = require('../lib/resource/ProjectConfiguration');
-  var loadResouce = require('../lib/test_helpers/loadResource').bind(null, JS);
+  var loadResouce = require('../lib/test_helpers/loadResource');
 
-  var testData = path.join(__dirname, '..', '__test_data__', 'JSLite');
+  var testData = path.join(__dirname, '..', '__test_data__', 'JS');
 
   it('should match package.json paths', function() {
-    expect(JS.matchPath('x.js')).toBe(true);
-    expect(JS.matchPath('a/x.js')).toBe(true);
-    expect(JS.matchPath('a/1.css')).toBe(false);
+    var loader =new JSLoader();
+    expect(loader.matchPath('x.js')).toBe(true);
+    expect(loader.matchPath('a/x.js')).toBe(true);
+    expect(loader.matchPath('a/1.css')).toBe(false);
   });
 
   it('should parse old school components', function() {
     loadResouce(
-      null,
+      new JSLoader(),
       path.join(testData, 'oldSchoolComponent.js'),
+      null,
       function(js) {
         expect(js.isModule).toBe(false);
         expect(js.id).toBe('oldSchoolComponent-tag');
@@ -32,8 +34,9 @@ describe('JSLite', function() {
 
   it('should parse modules with requires', function() {
     loadResouce(
-      null,
+      new JSLoader(),
       path.join(testData, 'module.js'),
+      null,
       function(js) {
         expect(js.isModule).toBe(true);
         expect(js.id).toBe('module-tag');
@@ -45,8 +48,9 @@ describe('JSLite', function() {
 
   it('should parse javelin', function() {
     loadResouce(
-      null,
+      new JSLoader(),
       path.join(testData, 'javelin.js'),
+      null,
       function(js) {
         expect(js.isModule).toBe(true);
         expect(js.isJavelin).toBe(true);
@@ -59,15 +63,14 @@ describe('JSLite', function() {
 
   it('should resolve paths using configuration', function() {
     loadResouce(
+      new JSLoader(),
+      path.join(testData, 'configured', 'a.js'),
       new ProjectConfiguration(
         path.join(testData, 'configured', 'package.json'),
         {}),
-      path.join(testData, 'configured', 'a.js'),
       function(js) {
         expect(js.id).toBe('configured/a');
         expect(js.requiredCSS).toEqual(['foo-css']);
-        expect(js.requiredModules)
-          .toEqual(['configured/b', 'configured/foo/index']);
       });
   });
 

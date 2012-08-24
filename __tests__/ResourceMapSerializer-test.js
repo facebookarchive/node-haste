@@ -5,15 +5,16 @@
 
 describe('ResourceMapSerializer', function() {
   var ResourceMapSerializer = require('../lib/ResourceMapSerializer');
-  var ResourceTypes = require('../lib/ResourceTypes');
   var ResourceMap = require('../lib/ResourceMap');
   var JS = require('../lib/resource/JS');
-  var JSTest = require('../lib/resource/JSTest');
   var CSS = require('../lib/resource/CSS');
+  var JSLoader = require('../lib/loader/JSLoader');
+  var JSTestLoader = require('../lib/loader/JSTestLoader');
+  var CSSLoader = require('../lib/loader/CSSLoader');
 
   it('should serialize resource map with a single object', function() {
-    var types = new ResourceTypes([JSTest, JS, CSS]);
-    var serializer = new ResourceMapSerializer(types);
+    var loaders = [new JSTestLoader(), new JSLoader(), new CSSLoader()];
+    var serializer = new ResourceMapSerializer(loaders);
     var map = new ResourceMap([
       JS.fromObject({
         path: 'a/b.js',
@@ -28,8 +29,8 @@ describe('ResourceMapSerializer', function() {
   });
 
   it('should serialize resource map with multiple objects', function() {
-    var types = new ResourceTypes([JSTest, JS, CSS]);
-    var serializer = new ResourceMapSerializer(types);
+    var loaders = [new JSTestLoader(), new JSLoader(), new CSSLoader()];
+    var serializer = new ResourceMapSerializer(loaders);
     var map = new ResourceMap([
       JS.fromObject({
         path: 'a/b.js',
@@ -58,8 +59,8 @@ describe('ResourceMapSerializer', function() {
     spyOn(fs, 'readFile').andCallFake(function(path, enc, callback) {
       callback(null, data);
     });
-    var types = new ResourceTypes([JSTest, JS, CSS]);
-    var serializer = new ResourceMapSerializer(types);
+    var loaders = [new JSTestLoader(), new JSLoader(), new CSSLoader()];
+    var serializer = new ResourceMapSerializer(loaders);
     var map = new ResourceMap([
       JS.fromObject({
         path: 'a/b.js',
@@ -88,5 +89,29 @@ describe('ResourceMapSerializer', function() {
       expect(map2.getResource('JS', 'b').requiredModules)
         .toEqual(['foo', 'bar']);
     });
+  });
+
+  it('should return null when version changes', function() {
+    var loaders = [new JSTestLoader(), new JSLoader(), new CSSLoader()];
+    var serializer = new ResourceMapSerializer(loaders);
+    var map = new ResourceMap([
+      JS.fromObject({
+        path: 'a/b.js',
+        id: 'b',
+        requiredModules: ['foo', 'bar']
+      }),
+      CSS.fromObject({
+        path: 'a/b.css',
+        id: 'b-css'
+      })
+    ]);
+
+    var ser = serializer.toObject(map);
+    var oldversion = ResourceMapSerializer.FORMAT_VERSION;
+    ResourceMapSerializer.FORMAT_VERSION = '0.2';
+
+    var map2 = serializer.fromObject(ser);
+    expect(map2).toBe(null);
+    ResourceMapSerializer.FORMAT_VERSION = oldversion;
   });
 });

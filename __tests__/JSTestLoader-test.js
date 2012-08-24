@@ -3,26 +3,27 @@
  * @emails javascript@lists.facebook.com voloko@fb.com
  */
 
-describe('JSTest', function() {
-  var JSTest = require('../lib/resource/JSTest');
+describe('JSTestLoader', function() {
+  var JSTestLoader = require('../lib/loader/JSTestLoader');
   var path = require('path');
-  var loadResouce = require('../lib/test_helpers/loadResource')
-    .bind(null, JSTest);
+  var loadResouce = require('../lib/test_helpers/loadResource');
 
   it('should match package.json paths', function() {
-    expect(JSTest.matchPath('x.js')).toBe(false);
-    expect(JSTest.matchPath('a/__tests__/x.js')).toBe(true);
-    expect(JSTest.matchPath('__tests__/x.js')).toBe(true);
-    expect(JSTest.matchPath('a/__tests__/support/x.js')).toBe(false);
-    expect(JSTest.matchPath('a/1.css')).toBe(false);
+    var loader = new JSTestLoader();
+    expect(loader.matchPath('x.js')).toBe(false);
+    expect(loader.matchPath('a/__tests__/x.js')).toBe(true);
+    expect(loader.matchPath('__tests__/x.js')).toBe(true);
+    expect(loader.matchPath('a/__tests__/support/x.js')).toBe(false);
+    expect(loader.matchPath('a/1.css')).toBe(false);
   });
 
   var testData = path.join(__dirname, '..', '__test_data__', 'JSTest');
 
   it('should extract dependencies', function() {
     loadResouce(
+      new JSTestLoader(),
+      path.join(testData, '__tests__', 'test-test.js'),
       null,
-      path.join(testData, 'test-test.js'),
       function(resource) {
         expect(resource.id).toBe('test-test');
         expect(resource.requiredModules)
