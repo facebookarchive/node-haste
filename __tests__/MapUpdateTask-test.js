@@ -129,7 +129,7 @@ describe("MapUpdateTask", function() {
       addMtime(1300000000000, new Resource('p1/a/1.js')),
       addMtime(1300000000000, new Resource('p1/b/2.js')),
       addMtime(1300000000000, new ProjectConfiguration('p1/package.json', {
-        haste: { directories: ['a'] }
+        haste: { roots: ['a'] }
       }))
     ]);
     var task = new MapUpdateTask(finder, [], map);
@@ -204,7 +204,7 @@ describe("MapUpdateTask", function() {
       addMtime(1300000000000, new Resource('p1/a/1.js')),
       addMtime(1300000000000, new Resource('p1/b/2.js')),
       addMtime(1200000000000, new ProjectConfiguration('p1/package.json', {
-        haste: { directories: ['a'] }
+        haste: { roots: ['a'] }
       }))
     ]);
     var configurationLoader = new ProjectConfigurationLoader();
@@ -248,7 +248,7 @@ describe("MapUpdateTask", function() {
       addMtime(1300000000000, new Resource('p1/a/1.js')),
       addMtime(1300000000000, new Resource('p1/b/2.js')),
       addMtime(1200000000000, new ProjectConfiguration('p1/package.json', {
-        haste: { directories: ['a'] }
+        haste: { roots: ['a'] }
       }))
     ]);
     var configurationLoader = new ProjectConfigurationLoader();
@@ -256,7 +256,7 @@ describe("MapUpdateTask", function() {
       .andCallFake(function(path, configuration, callback) {
         callback(
           new ProjectConfiguration('p1/package.json', {
-            haste: { directories: ['a'] }
+            haste: { roots: ['a'] }
           }));
       });
 

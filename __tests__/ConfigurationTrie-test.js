@@ -22,7 +22,7 @@ describe('ConfigurationTrie', function() {
     var config = new ProjectConfiguration(
       'a/b/package.json',
       {
-        haste: { directories: ['c', 'd'] }
+        haste: { roots: ['c', 'd'] }
       });
     var trie = new ConfigurationTrie([config]);
 
