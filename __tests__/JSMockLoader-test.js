@@ -6,7 +6,6 @@
 describe('JSMockLoader', function() {
   var JSMockLoader = require('../lib/loader/JSMockLoader');
   var path = require('path');
-  var ProjectConfiguration = require('../lib/resource/ProjectConfiguration');
   var loadResouce = require('../lib/test_helpers/loadResource');
 
   it('should match package.json paths', function() {

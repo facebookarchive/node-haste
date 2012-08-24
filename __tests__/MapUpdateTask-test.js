@@ -284,7 +284,7 @@ describe("MapUpdateTask", function() {
 
   it('should load resource when changed', function() {
     var finder = createFinderSpy([
-      ['sub/added.js', 1300000000000],
+      ['sub/added.js', 1300000000000]
     ]);
     var map = new ResourceMap([]);
     var loader = new ResourceLoader();
@@ -306,7 +306,7 @@ describe("MapUpdateTask", function() {
 
   it('should update resource when changed', function() {
     var finder = createFinderSpy([
-      ['sub/changed.js', 1300000000000],
+      ['sub/changed.js', 1300000000000]
     ]);
     var old = addMtime(1200000000000, new Resource('sub/changed.js'));
     var map = new ResourceMap([old]);

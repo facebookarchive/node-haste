@@ -1,5 +1,5 @@
 /**
- * @emails foo@bar.com
+ * @emails javascript@lists.facebook.com voloko@fb.com
  */
 
 var fs = require('fs');
