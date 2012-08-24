@@ -44,4 +44,15 @@ describe('Image', function() {
       expect(resource.height).toBe(596);
     });
   });
+
+  it('should calculate network size when asked', function() {
+    var loader = new ImageLoader({ networkSize: true });
+    loadResouce(
+      loader,
+      path.join(testData, 'a.jpg'),
+      null,
+      function(r) {
+        expect(r.networkSize).toBe(127381);
+      });
+  });
 });

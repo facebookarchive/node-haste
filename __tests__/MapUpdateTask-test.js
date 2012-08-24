@@ -11,6 +11,7 @@ describe("MapUpdateTask", function() {
   var ProjectConfiguration = require('../lib/resource/ProjectConfiguration');
   var ProjectConfigurationLoader =
     require('../lib/loader/ProjectConfigurationLoader');
+  var waitsForCallback = require('../lib/test_helpers/waitsForCallback');
 
   function createFinderSpy(data) {
     var finder = createSpyObj('FileFinder', ['find']);
@@ -209,6 +210,7 @@ describe("MapUpdateTask", function() {
     var configurationLoader = new ProjectConfigurationLoader();
     spyOn(configurationLoader, 'loadFromPath')
       .andCallFake(function(path, configuration, callback) {
+        expect(path).toBe('p1/package.json');
         callback(
           new ProjectConfiguration('p1/package.json', {}));
       });
@@ -279,4 +281,51 @@ describe("MapUpdateTask", function() {
       ]);
     });
   });
+
+  it('should load resource when changed', function() {
+    var finder = createFinderSpy([
+      ['sub/added.js', 1300000000000],
+    ]);
+    var map = new ResourceMap([]);
+    var loader = new ResourceLoader();
+    var task = new MapUpdateTask(finder, [loader], map);
+    spyOn(loader, 'loadFromPath')
+      .andCallFake(function(path, configuration, callback) {
+        expect(path).toBe('sub/added.js');
+        callback(new Resource('sub/added.js'));
+      });
+
+    waitsForCallback(
+      function(callback) {
+        task.on('complete', callback);
+        task.run();
+      },
+      function() {}
+    );
+  });
+
+  it('should update resource when changed', function() {
+    var finder = createFinderSpy([
+      ['sub/changed.js', 1300000000000],
+    ]);
+    var old = addMtime(1200000000000, new Resource('sub/changed.js'));
+    var map = new ResourceMap([old]);
+    var loader = new ResourceLoader();
+    var task = new MapUpdateTask(finder, [loader], map);
+    spyOn(loader, 'updateFromPath')
+      .andCallFake(function(path, configuration, oldResource, callback) {
+        expect(path).toBe('sub/changed.js');
+        expect(oldResource).toBe(old);
+        callback(new Resource('sub/changed.js'));
+      });
+
+    waitsForCallback(
+      function(callback) {
+        task.on('complete', callback);
+        task.run();
+      },
+      function() {}
+    );
+  });
+
 });

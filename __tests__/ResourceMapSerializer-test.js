@@ -93,7 +93,8 @@ describe('ResourceMapSerializer', function() {
 
   it('should return null when version changes', function() {
     var loaders = [new JSTestLoader(), new JSLoader(), new CSSLoader()];
-    var serializer = new ResourceMapSerializer(loaders);
+    var serializer1 = new ResourceMapSerializer(loaders, { version: '0.1' });
+    var serializer2 = new ResourceMapSerializer(loaders, { version: '0.2' });
     var map = new ResourceMap([
       JS.fromObject({
         path: 'a/b.js',
@@ -106,12 +107,8 @@ describe('ResourceMapSerializer', function() {
       })
     ]);
 
-    var ser = serializer.toObject(map);
-    var oldversion = ResourceMapSerializer.FORMAT_VERSION;
-    ResourceMapSerializer.FORMAT_VERSION = '0.2';
-
-    var map2 = serializer.fromObject(ser);
+    var ser = serializer1.toObject(map);
+    var map2 = serializer2.fromObject(ser);
     expect(map2).toBe(null);
-    ResourceMapSerializer.FORMAT_VERSION = oldversion;
   });
 });

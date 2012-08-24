@@ -5,9 +5,12 @@
 
 describe('JSLoader', function() {
   var path = require('path');
+  var JS = require('../lib/resource/JS');
   var JSLoader = require('../lib/loader/JSLoader');
   var ProjectConfiguration = require('../lib/resource/ProjectConfiguration');
+  var ResourceMap = require('../lib/ResourceMap');
   var loadResouce = require('../lib/test_helpers/loadResource');
+  var waitsForCallback = require('../lib/test_helpers/waitsForCallback');
 
   var testData = path.join(__dirname, '..', '__test_data__', 'JS');
 
@@ -61,6 +64,46 @@ describe('JSLoader', function() {
       });
   });
 
+  it('should exptract network size', function() {
+    loadResouce(
+      new JSLoader({ networkSize: true }),
+      path.join(testData, 'javelin.js'),
+      null,
+      function(js) {
+        expect(js.networkSize > 0).toBe(true);
+      });
+  });
+
+  it('should exptract javelin symbols', function() {
+    loadResouce(
+      new JSLoader({
+        javelinsymbolsPath: 'echo -e "\n+MSteps:13\n?JX.URL:11\n?JX.install:9"'
+      }),
+      path.join(testData, 'javelin.js'),
+      null,
+      function(js) {
+        expect(js.definedJavelinSymbols).toEqual(['JX.MSteps']);
+        expect(js.requiredJavelinSymbols.sort())
+          .toEqual(['JX.URL', 'JX.install']);
+      });
+  });
+
+  it('should exptract javelin symbols and networkSize', function() {
+    loadResouce(
+      new JSLoader({
+        javelinsymbolsPath: 'echo -e "\n+MSteps:13\n?JX.URL:11\n?JX.install:9"',
+        networkSize: true
+      }),
+      path.join(testData, 'javelin.js'),
+      null,
+      function(js) {
+        expect(js.definedJavelinSymbols).toEqual(['JX.MSteps']);
+        expect(js.requiredJavelinSymbols.sort())
+          .toEqual(['JX.URL', 'JX.install']);
+        expect(js.networkSize > 0).toBe(true);
+      });
+  });
+
   it('should resolve paths using configuration', function() {
     loadResouce(
       new JSLoader(),
@@ -74,4 +117,62 @@ describe('JSLoader', function() {
       });
   });
 
+  it('should resolve local paths in post process', function() {
+    var map;
+
+    waitsForCallback(
+      // test
+      function(callback) {
+        var loader = new JSLoader();
+        map = new ResourceMap([
+          JS.fromObject({
+            id: 'a',
+            path: 'project1/a.js',
+            requiredModules: ['../b']
+          }),
+          JS.fromObject({
+            id: 'b',
+            path: 'b.js'
+          })
+        ]);
+
+        loader.postProcess(map, map.getAllResources(), callback);
+      },
+
+      // expectation
+      function() {
+        expect(map.getResource('JS', 'a').requiredModules).toEqual(['b']);
+      }
+    );
+  });
+
+
+  it('should resolve local paths with index', function() {
+    var map;
+
+    waitsForCallback(
+      // test
+      function(callback) {
+        var loader = new JSLoader();
+        map = new ResourceMap([
+          JS.fromObject({
+            id: 'a',
+            path: 'project1/a.js',
+            requiredModules: ['../b']
+          }),
+          JS.fromObject({
+            id: 'b',
+            path: 'b/index.js'
+          })
+        ]);
+
+        loader.postProcess(map, map.getAllResources(), callback);
+      },
+
+      // expectation
+      function() {
+        expect(map.getResource('JS', 'a').requiredModules).toEqual(['b']);
+      }
+    );
+  });
 });

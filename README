@@ -40,25 +40,22 @@ Once scanned it will update the map with the new data.
 
 EXAMPLE
 
-  // where and what files to search for
-  var finder = new FileFinder({
-    scanDirs: '.',
-    extensions: ['.js', '.css', '.json']
-  });
+  var Haste = require('node-haste/Haste');
+  var loaders = require('node-haste/loaders');
 
-  // what types to analyze
-  var types = new ResourceTypes([JS, CSS, ProjectConfiguration]);
+  // configure haste facade
+  var haste = new Haste(
+  [
+    new loaders.JSLoader({ networkSize: true }),
+    new loaders.CSSLoader({ networkSize: true }),
+    new ProjectConfigurationLoader(),
+    new ResourceLoader()
+  ],
+  ['html']);
 
-  // load existing cache
-  var serializer = new ResourceMapSerializer(types);
-  serializer.loadFromPath('.cache', function(err, map) {
-
-    // run an update task to scan and analyze changed files
-    new MapUpdateTask(finder, types, map).on('complete', function() {
-
-      // map will be updated at this point
-      console.log(map.getResource('JS', 'foo').requiredCSS);
-    });
+  // return current map, utilizing cache if available
+  haste.update('.cache', function(map) {
+    assert(map instanceof ResourceMap);
   });
 
 

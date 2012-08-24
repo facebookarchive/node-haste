@@ -6,4 +6,8 @@
  * @javelin
  */
 
-JX.install('MSteps', {});
+JX.install('MSteps', {
+  foo: function() {
+    return new JX.URL();
+  }
+});
