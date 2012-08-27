@@ -22,6 +22,11 @@ describe('ResourceMap', function() {
     expect(map.getAllResources()).toEqual([a, b]);
   });
 
+  it('should return elements from empty map', function() {
+    var map = new ResourceMap([]);
+    expect(map.getResource('JS', 'a')).toBe(undefined);
+  });
+
   it('should add elements', function() {
     var a, b;
     var map = new ResourceMap([
