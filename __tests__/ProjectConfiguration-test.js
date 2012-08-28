@@ -20,4 +20,24 @@ describe('ProjectConfiguration', function() {
     expect(resource.getHasteRoots()).toEqual(['a/b/lib', 'a/b/tests']);
   });
 
+  it('should resolve id with a prefix', function() {
+    var resource = new ProjectConfiguration(
+      'a/b/package.json',
+      { haste: {
+        roots: ['lib', 'tests'],
+        prefix: "bar"
+      }});
+    expect(resource.resolveID('a/b/lib/foo')).toEqual('bar/foo');
+  });
+
+  it('should resolve id without a prefix', function() {
+    var resource = new ProjectConfiguration(
+      'a/b/package.json',
+      { haste: {
+        roots: ['lib', 'tests'],
+        prefix: ""
+      }});
+    expect(resource.resolveID('a/b/lib/foo')).toEqual('foo');
+  });
+
 });
