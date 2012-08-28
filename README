@@ -48,8 +48,8 @@ EXAMPLE
   [
     new loaders.JSLoader({ networkSize: true }),
     new loaders.CSSLoader({ networkSize: true }),
-    new ProjectConfigurationLoader(),
-    new ResourceLoader()
+    new loaders.ProjectConfigurationLoader(),
+    new loaders.ResourceLoader()
   ],
   ['html']);
 
