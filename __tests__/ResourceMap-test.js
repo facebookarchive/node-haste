@@ -70,4 +70,17 @@ describe('ResourceMap', function() {
     expect(map.getAllResourcesByType('ProjectConfiguration')).toEqual([pa, pb]);
     expect(map.getAllResourcesByType('Resource')).toEqual([a, b]);
   });
+
+  it('should get all resources by type', function() {
+    var a, b, pa, pb;
+    var map = new ResourceMap([
+      a = new Resource('a/a.js'),
+      b = new Resource('b/b.js'),
+      pa = new ProjectConfiguration('a/package.json', {})
+    ]);
+    expect(map.getConfigurationByPath(a.path)).toBe(pa);
+    pb = new ProjectConfiguration('b/package.json', {});
+    map.addResource(pb);
+    expect(map.getConfigurationForResource(b)).toBe(pb);
+  });
 });
