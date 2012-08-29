@@ -57,6 +57,7 @@ describe('ResourceMap', function() {
     map.removeResource(b);
     expect(map.getResource('Resource', 'b')).toBe(undefined);
     expect(map.getAllResources()).toEqual([a]);
+    expect(map.getAllResourcesByType('Resource')).toEqual([a]);
   });
 
   it('should get all resources by type', function() {

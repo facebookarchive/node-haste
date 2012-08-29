@@ -4,13 +4,13 @@
                                                             .OOo
                                                             OOOOL
                                    __________________    .. JOOO?
-                                                      .eSSSSSS**'
-                                                    gSSSSSSSSSS    6.
-                                                    oo  SSSSSSSs  .G
-                                       ___________   oo SSSSSSSSSgG
-                                                      *ISSSSSS  **
-                                                       SSSSSSS
-                                                     .oYSSSSSY.
+                                                      .gGMMHHH1?'
+                                                    gGGPYMHHHHH    @p
+                                                    GG  JMHHHHTL  .G
+                                       ___________   Gg MMHHHHJGGgG
+                                                      G@MHHHHY  **
+                                                       @@HHHHI
+                                                     .oHHHHHHH.
                                                      OOOOOOOOOOOg
                                                     .OOOOT**TOOOOO.
                          ______________________    .OOOO'     'OOOOO.
@@ -18,9 +18,9 @@
                                                .oOOOO*        .OOOO*
                                              .OOOOO''       .OOOOO
                                           .JOOOO*         .##OOO'
-                                         C##?/             T##I
-                                          Y#|                'V
-     Node Haste ________________________   C
+                                         C##?/             '##.
+                                          Y#                 'V.
+     Node Haste ________________________   C.
 
 
 
@@ -48,8 +48,8 @@ EXAMPLE
   [
     new loaders.JSLoader({ networkSize: true }),
     new loaders.CSSLoader({ networkSize: true }),
-    new loaders.ProjectConfigurationLoader(),
-    new loaders.ResourceLoader()
+    new ProjectConfigurationLoader(),
+    new ResourceLoader()
   ],
   ['html']);
 
