@@ -26,7 +26,7 @@ describe('JSLoader', function() {
       new JSLoader(),
       path.join(testData, 'oldSchoolComponent.js'),
       null,
-      function(js) {
+      function(errors, js) {
         expect(js.isModule).toBe(false);
         expect(js.id).toBe('oldSchoolComponent-tag');
         expect(js.requiredLegacyComponents).toEqual(['foo', 'bar']);
@@ -40,7 +40,7 @@ describe('JSLoader', function() {
       new JSLoader(),
       path.join(testData, 'module.js'),
       null,
-      function(js) {
+      function(errors, js) {
         expect(js.isModule).toBe(true);
         expect(js.id).toBe('module-tag');
         expect(js.requiredModules).toEqual(['foo', 'bar']);
@@ -54,7 +54,7 @@ describe('JSLoader', function() {
       new JSLoader(),
       path.join(testData, 'javelin.js'),
       null,
-      function(js) {
+      function(errors, js) {
         expect(js.isModule).toBe(true);
         expect(js.isJavelin).toBe(true);
         expect(js.isRunWhenReady).toBe(true);
@@ -69,7 +69,7 @@ describe('JSLoader', function() {
       new JSLoader({ networkSize: true }),
       path.join(testData, 'javelin.js'),
       null,
-      function(js) {
+      function(errors, js) {
         expect(js.networkSize > 0).toBe(true);
       });
   });
@@ -81,7 +81,7 @@ describe('JSLoader', function() {
       }),
       path.join(testData, 'javelin.js'),
       null,
-      function(js) {
+      function(errors, js) {
         expect(js.definedJavelinSymbols).toEqual(['JX.MSteps']);
         expect(js.requiredJavelinSymbols.sort())
           .toEqual(['JX.URL', 'JX.install']);
@@ -96,7 +96,7 @@ describe('JSLoader', function() {
       }),
       path.join(testData, 'javelin.js'),
       null,
-      function(js) {
+      function(errors, js) {
         expect(js.definedJavelinSymbols).toEqual(['JX.MSteps']);
         expect(js.requiredJavelinSymbols.sort())
           .toEqual(['JX.URL', 'JX.install']);
@@ -111,7 +111,7 @@ describe('JSLoader', function() {
       new ProjectConfiguration(
         path.join(testData, 'configured', 'package.json'),
         {}),
-      function(js) {
+      function(errors, js) {
         expect(js.id).toBe('configured/a');
         expect(js.requiredCSS).toEqual(['foo-css']);
       });

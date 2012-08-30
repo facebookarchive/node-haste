@@ -33,7 +33,7 @@ describe('JSMockLoader', function() {
       new JSMockLoader(),
       path.join(testData, '__mocks__', 'mock.js'),
       null,
-      function(resource) {
+      function(errors, resource) {
         expect(resource.id).toBe('mock');
         expect(resource.requiredModules).toEqual(['foo', 'bar']);
       });

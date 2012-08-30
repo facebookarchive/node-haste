@@ -34,7 +34,7 @@ describe('JSBenchLoader', function() {
       new JSBenchLoader(),
       path.join(testData, '__benchmarks__/html-bench.js'),
       null,
-      function(resource) {
+      function(errors, resource) {
         expect(resource.id).toBe('html-bench');
         expect(resource.requiredModules)
           .toEqual(['htmlSpecialChars']);
@@ -49,7 +49,7 @@ describe('JSBenchLoader', function() {
       new ProjectConfiguration(
         path.join(testData, 'configured', 'package.json'),
         {}),
-      function(resource) {
+      function(errors, resource) {
         expect(resource.id).toBe('configured/__benchmarks__/test-bench');
       });
   });

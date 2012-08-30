@@ -24,7 +24,7 @@ describe('JSTestLoader', function() {
       new JSTestLoader(),
       path.join(testData, '__tests__', 'test-test.js'),
       null,
-      function(resource) {
+      function(errors, resource) {
         expect(resource.id).toBe('test-test');
         expect(resource.requiredModules)
           .toEqual(['fs', 'temp', 'mock-modules', 'why', 'are', 'we', 'here']);

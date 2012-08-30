@@ -28,7 +28,7 @@ describe('Image', function() {
       loader,
       path.join(testData, 'a.jpg'),
       null,
-      function(r) {
+      function(errors, r) {
         loader.postProcess(new ResourceMap([r]), [r], function() {
           processed = true;
           resource = r;
@@ -51,7 +51,7 @@ describe('Image', function() {
       loader,
       path.join(testData, 'a.jpg'),
       null,
-      function(r) {
+      function(errors, r) {
         expect(r.networkSize).toBe(127381);
       });
   });

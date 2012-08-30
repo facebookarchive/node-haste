@@ -22,7 +22,7 @@ describe('CSSLoader', function() {
       new CSSLoader(),
       path.join(testData, 'plain.css'),
       null,
-      function(css) {
+      function(err, css) {
         expect(css.id).toBe('plain-css');
         expect(css.options).toEqual({ 'no-browser-specific-css' : true });
         expect(css.requiredCSS).toEqual(['bar']);
@@ -34,7 +34,7 @@ describe('CSSLoader', function() {
       new CSSLoader(),
       path.join(testData, 'special.css'),
       null,
-      function(css) {
+      function(err, css) {
         expect(css.id).toBe('special-css');
         expect(css.isNonblocking).toBe(true);
         expect(css.isNopackage).toBe(true);
@@ -46,7 +46,7 @@ describe('CSSLoader', function() {
       new CSSLoader({ extractFBSprites: true }),
       path.join(testData, 'fb-sprite.css'),
       null,
-      function(css) {
+      function(err, css) {
         expect(css.fbSprites).toEqual([
           'images/dialog/large_halo_top_left.png',
           'images/dialog/large_halo_top_right.png'
@@ -59,7 +59,7 @@ describe('CSSLoader', function() {
       new CSSLoader({ networkSize: true }),
       path.join(testData, 'fb-sprite.css'),
       null,
-      function(css) {
+      function(err, css) {
         expect(css.networkSize > 0).toBe(true);
       });
   });

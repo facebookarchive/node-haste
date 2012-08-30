@@ -168,6 +168,7 @@ describe("MapUpdateTask", function() {
     spyOn(configurationLoader, 'loadFromPath')
       .andCallFake(function(path, configuration, callback) {
         callback(
+          null,
           new ProjectConfiguration('p1/package.json', {}));
       });
 
@@ -212,6 +213,7 @@ describe("MapUpdateTask", function() {
       .andCallFake(function(path, configuration, callback) {
         expect(path).toBe('p1/package.json');
         callback(
+          null,
           new ProjectConfiguration('p1/package.json', {}));
       });
 
@@ -255,6 +257,7 @@ describe("MapUpdateTask", function() {
     spyOn(configurationLoader, 'loadFromPath')
       .andCallFake(function(path, configuration, callback) {
         callback(
+          null,
           new ProjectConfiguration('p1/package.json', {
             haste: { roots: ['a'] }
           }));
@@ -292,7 +295,7 @@ describe("MapUpdateTask", function() {
     spyOn(loader, 'loadFromPath')
       .andCallFake(function(path, configuration, callback) {
         expect(path).toBe('sub/added.js');
-        callback(new Resource('sub/added.js'));
+        callback(null, new Resource('sub/added.js'));
       });
 
     waitsForCallback(
@@ -316,7 +319,7 @@ describe("MapUpdateTask", function() {
       .andCallFake(function(path, configuration, oldResource, callback) {
         expect(path).toBe('sub/changed.js');
         expect(oldResource).toBe(old);
-        callback(new Resource('sub/changed.js'));
+        callback(null, new Resource('sub/changed.js'));
       });
 
     waitsForCallback(
