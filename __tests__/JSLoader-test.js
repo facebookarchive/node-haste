@@ -10,6 +10,7 @@ describe('JSLoader', function() {
   var ProjectConfiguration = require('../lib/resource/ProjectConfiguration');
   var ResourceMap = require('../lib/ResourceMap');
   var loadResouce = require('../lib/test_helpers/loadResource');
+  var MessageList = require('../lib/MessageList');
   var waitsForCallback = require('../lib/test_helpers/waitsForCallback');
 
   var testData = path.join(__dirname, '..', '__test_data__', 'JS');
@@ -140,7 +141,8 @@ describe('JSLoader', function() {
       },
 
       // expectation
-      function() {
+      function(messages) {
+        expect(messages).toEqual(jasmine.any(MessageList));
         expect(map.getResource('JS', 'a').requiredModules).toEqual(['b']);
       }
     );
@@ -170,7 +172,8 @@ describe('JSLoader', function() {
       },
 
       // expectation
-      function() {
+      function(messages) {
+        expect(messages).toEqual(jasmine.any(MessageList));
         expect(map.getResource('JS', 'a').requiredModules).toEqual(['b']);
       }
     );

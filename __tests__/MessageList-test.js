@@ -13,7 +13,7 @@ describe("MessageList", function() {
     list.addWarning('foo.js', 'js', 'warning');
     list.addError('foo.js', 'js', 'error');
     list.addClowntownError('foo.js', 'js', 'clowntown');
-    expect(list.messages.length).toBe(4);
+    expect(list.length).toBe(4);
   });
 
   it('should render error with bold', function() {
@@ -53,7 +53,7 @@ describe("MessageList", function() {
     list2.addClowntownError('a', 'b', '3');
 
     list2.merge(list1);
-    expect(list2.messages.length).toBe(3);
+    expect(list2.length).toBe(3);
   });
 
   it('should reuse objects created through the factory', function() {
@@ -62,7 +62,7 @@ describe("MessageList", function() {
     list.addWarning('a', 'b', '1');
 
     list.recycle();
-    expect(list.messages.length).toBe(0);
+    expect(list.length).toBe(0);
     expect(MessageList.create()).toBe(list);
   });
 });
