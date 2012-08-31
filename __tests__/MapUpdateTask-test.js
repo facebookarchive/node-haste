@@ -11,6 +11,8 @@ describe("MapUpdateTask", function() {
   var ProjectConfiguration = require('../lib/resource/ProjectConfiguration');
   var ProjectConfigurationLoader =
     require('../lib/loader/ProjectConfigurationLoader');
+  var MessageList = require('../lib/MessageList');
+
   var waitsForCallback = require('../lib/test_helpers/waitsForCallback');
 
   function createFinderSpy(data) {
@@ -168,7 +170,7 @@ describe("MapUpdateTask", function() {
     spyOn(configurationLoader, 'loadFromPath')
       .andCallFake(function(path, configuration, callback) {
         callback(
-          null,
+          new MessageList(),
           new ProjectConfiguration('p1/package.json', {}));
       });
 
@@ -213,7 +215,7 @@ describe("MapUpdateTask", function() {
       .andCallFake(function(path, configuration, callback) {
         expect(path).toBe('p1/package.json');
         callback(
-          null,
+          new MessageList(),
           new ProjectConfiguration('p1/package.json', {}));
       });
 
@@ -257,7 +259,7 @@ describe("MapUpdateTask", function() {
     spyOn(configurationLoader, 'loadFromPath')
       .andCallFake(function(path, configuration, callback) {
         callback(
-          null,
+          new MessageList(),
           new ProjectConfiguration('p1/package.json', {
             haste: { roots: ['a'] }
           }));
@@ -295,7 +297,7 @@ describe("MapUpdateTask", function() {
     spyOn(loader, 'loadFromPath')
       .andCallFake(function(path, configuration, callback) {
         expect(path).toBe('sub/added.js');
-        callback(null, new Resource('sub/added.js'));
+        callback(new MessageList(), new Resource('sub/added.js'));
       });
 
     waitsForCallback(
@@ -319,15 +321,74 @@ describe("MapUpdateTask", function() {
       .andCallFake(function(path, configuration, oldResource, callback) {
         expect(path).toBe('sub/changed.js');
         expect(oldResource).toBe(old);
-        callback(null, new Resource('sub/changed.js'));
+        callback(new MessageList(), new Resource('sub/changed.js'));
       });
 
     waitsForCallback(
       function(callback) {
-        task.on('complete', callback);
-        task.run();
+        task.on('complete', callback).run();
       },
       function() {}
+    );
+  });
+
+  it('should aggregate messages from loaders', function() {
+    var finder = createFinderSpy([
+      ['sub/new1.js', 1300000000000],
+      ['sub/new2.js', 1300000000000]
+    ]);
+    var map = new ResourceMap([]);
+    var loader = new ResourceLoader();
+    var task = new MapUpdateTask(finder, [loader], map);
+    spyOn(loader, 'loadFromPath')
+      .andCallFake(function(path, configuration, callback) {
+        var messages = new MessageList();
+        messages.addError(path, 'foo', 'bar');
+        callback(messages, new Resource(path));
+      });
+
+    waitsForCallback(
+      function(callback) {
+        task.on('complete', callback).run();
+      },
+      function() {
+        expect(task.messages.length).toBe(2);
+      }
+    );
+  });
+
+  it('should aggregate messages from postProcess', function() {
+    var finder = createFinderSpy([
+      ['sub/new1.js', 1300000000000],
+      ['sub/new2.js', 1300000000000]
+    ]);
+    var map = new ResourceMap([]);
+    var loader = new ResourceLoader();
+    var task = new MapUpdateTask(finder, [loader], map);
+    spyOn(loader, 'loadFromPath')
+      .andCallFake(function(path, configuration, callback) {
+        var messages = new MessageList();
+        process.nextTick(function() {
+          callback(messages, new Resource(path));
+        });
+      });
+
+    spyOn(loader, 'postProcess')
+      .andCallFake(function(map, resources, callback) {
+        var messages = new MessageList();
+        resources.forEach(function(resource) {
+          messages.addError(resource.path, 'foo', 'bar');
+        })
+        callback(messages);
+      });
+
+    waitsForCallback(
+      function(callback) {
+        task.on('complete', callback).run();
+      },
+      function() {
+        expect(task.messages.length).toBe(2);
+      }
     );
   });
 
