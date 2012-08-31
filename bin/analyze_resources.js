@@ -83,7 +83,10 @@ haste.on('mapStored', function() {
   logTime('map stored: ');
 });
 
-haste.update(cachePath, function(map) {
+haste.update(cachePath, function(map, messages) {
   logTime('map stored with ' + map.getAllResources().length +
     ' resources: ');
+  if (messages.length) {
+    console.log(messages.render());
+  }
 });
