@@ -332,6 +332,24 @@ describe("MapUpdateTask", function() {
     );
   });
 
+  it('should not load deleted resource', function() {
+    var finder = createFinderSpy([]);
+    var old = addMtime(1200000000000, new Resource('sub/deleted.js'));
+    var map = new ResourceMap([old]);
+    var loader = new ResourceLoader();
+    var task = new MapUpdateTask(finder, [loader], map);
+    spyOn(loader, 'loadFromPath');
+
+    waitsForCallback(
+      function(callback) {
+        task.on('complete', callback).run();
+      },
+      function() {
+        expect(loader.loadFromPath).not.toHaveBeenCalled();
+      }
+    );
+  });
+
   it('should aggregate messages from loaders', function() {
     var finder = createFinderSpy([
       ['sub/new1.js', 1300000000000],

@@ -8,6 +8,7 @@ describe('Image', function() {
   var ResourceMap = require('../lib/ResourceMap');
   var path = require('path');
   var loadResouce = require('../lib/test_helpers/loadResource');
+  var waitsForCallback = require('../lib/test_helpers/waitsForCallback');
 
   it('should match package.json paths', function() {
     var loader = new ImageLoader();
@@ -54,5 +55,20 @@ describe('Image', function() {
       function(errors, r) {
         expect(r.networkSize).toBe(127381);
       });
+  });
+
+  it('should return form postProcess with 0 resources', function() {
+    var loader = new ImageLoader();
+    var map = new ResourceMap();
+    waitsForCallback(
+      function(callback) {
+        loader.postProcess(map, [], function() {
+          callback();
+        });
+      },
+      function(messages) {
+        expect(messages).not.toBe(null);
+      }
+    );
   });
 });
