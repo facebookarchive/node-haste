@@ -65,4 +65,18 @@ describe("MessageList", function() {
     expect(list.length).toBe(0);
     expect(MessageList.create()).toBe(list);
   });
+
+  it('should serialize a message list', function() {
+    var list = new MessageList();
+    list.addMessage('foo.js', 'js', 'message');
+    list.addWarning('foo.js', 'js', 'warning');
+    list.addError('foo.js', 'js', 'error text');
+    list.addClowntownError('foo.js', 'js', 'clowntown');
+
+    list = MessageList.fromObject(
+      JSON.parse(JSON.stringify(list.toObject())));
+    expect(list.length).toBe(4);
+    expect(list.render()).toContain('error text');
+    expect(list.render()).toContain(cli.awesome('Error'));
+  });
 });

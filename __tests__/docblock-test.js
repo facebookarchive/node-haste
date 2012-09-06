@@ -36,7 +36,6 @@ describe('docblock', function() {
     ]);
   });
 
-
   it('should parse directives out of a docblock with comments', function() {
     var code =
       '/**\n' +
