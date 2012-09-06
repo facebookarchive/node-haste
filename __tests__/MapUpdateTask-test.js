@@ -15,14 +15,6 @@ describe("MapUpdateTask", function() {
 
   var waitsForCallback = require('../lib/test_helpers/waitsForCallback');
 
-  function createFinderSpy(data) {
-    var finder = createSpyObj('FileFinder', ['find']);
-    finder.find.andCallFake(function(callback) {
-      callback(data);
-    });
-    return finder;
-  }
-
   function expectChanges(changed, expected) {
     expect(changed.length).toBe(expected.length);
     var pathMap = {};
@@ -50,18 +42,18 @@ describe("MapUpdateTask", function() {
   }
 
   it("should find changed files", function() {
-    var finder = createFinderSpy([
+    var files = [
       ['sub/added.js', 1300000000000],
       ['changed.js', 1300000000000],
       ['unmodified.js', 1300000000000]
-    ]);
+    ];
     var map = new ResourceMap([
       addMtime(1200000000000, new Resource('sub/removed.js')),
       addMtime(1200000000000, new Resource('changed.js')),
       addMtime(1300000000000, new Resource('unmodified.js'))
     ]);
     var task = new MapUpdateTask(
-      finder,
+      files,
       [],
       map);
     var changed;
@@ -87,17 +79,17 @@ describe("MapUpdateTask", function() {
   });
 
   it('should find changes on package.json deletion', function() {
-    var finder = createFinderSpy([
+    var files = [
       ['p1/a/1.js', 1300000000000],
       ['p1/b/2.js', 1300000000000]
-    ]);
+    ];
     var map = new ResourceMap([
       addMtime(1300000000000, new Resource('p1/a/1.js')),
       addMtime(1300000000000, new Resource('p1/b/2.js')),
       addMtime(1300000000000, new ProjectConfiguration('p1/package.json', {}))
     ]);
     var task = new MapUpdateTask(
-      finder,
+      files,
       [],
       map);
     var changed;
@@ -123,10 +115,10 @@ describe("MapUpdateTask", function() {
   });
 
   it('should find changes on package.json deletion + haste dirs', function() {
-    var finder = createFinderSpy([
+    var files = [
       ['p1/a/1.js', 1300000000000],
       ['p1/b/2.js', 1300000000000]
-    ]);
+    ];
     var map = new ResourceMap([
       addMtime(1300000000000, new Resource('p1/a/1.js')),
       addMtime(1300000000000, new Resource('p1/b/2.js')),
@@ -134,7 +126,7 @@ describe("MapUpdateTask", function() {
         haste: { roots: ['a'] }
       }))
     ]);
-    var task = new MapUpdateTask(finder, [], map);
+    var task = new MapUpdateTask(files, [], map);
     var changed;
 
     runs(function() {
@@ -157,11 +149,11 @@ describe("MapUpdateTask", function() {
   });
 
   it('should find changes on package.json addition', function() {
-    var finder = createFinderSpy([
+    var files = [
       ['p1/a/1.js', 1300000000000],
       ['p1/b/2.js', 1300000000000],
       ['p1/package.json', 1300000000000]
-    ]);
+    ];
     var map = new ResourceMap([
       addMtime(1300000000000, new Resource('p1/a/1.js')),
       addMtime(1300000000000, new Resource('p1/b/2.js'))
@@ -174,7 +166,7 @@ describe("MapUpdateTask", function() {
           new ProjectConfiguration('p1/package.json', {}));
       });
 
-    var task = new MapUpdateTask(finder, [configurationLoader], map);
+    var task = new MapUpdateTask(files, [configurationLoader], map);
     var changed;
 
     runs(function() {
@@ -198,11 +190,11 @@ describe("MapUpdateTask", function() {
   });
 
   it('should find changes on package.json change', function() {
-    var finder = createFinderSpy([
+    var files = [
       ['p1/a/1.js', 1300000000000],
       ['p1/b/2.js', 1300000000000],
       ['p1/package.json', 1300000000000]
-    ]);
+    ];
     var map = new ResourceMap([
       addMtime(1300000000000, new Resource('p1/a/1.js')),
       addMtime(1300000000000, new Resource('p1/b/2.js')),
@@ -219,7 +211,7 @@ describe("MapUpdateTask", function() {
           new ProjectConfiguration('p1/package.json', {}));
       });
 
-    var task = new MapUpdateTask(finder, [configurationLoader], map);
+    var task = new MapUpdateTask(files, [configurationLoader], map);
     var changed;
 
     runs(function() {
@@ -243,11 +235,11 @@ describe("MapUpdateTask", function() {
   });
 
   it('should find changes on package.json change + haste dirs', function() {
-    var finder = createFinderSpy([
+    var files = [
       ['p1/a/1.js', 1300000000000],
       ['p1/b/2.js', 1300000000000],
       ['p1/package.json', 1300000000000]
-    ]);
+    ];
     var map = new ResourceMap([
       addMtime(1300000000000, new Resource('p1/a/1.js')),
       addMtime(1300000000000, new Resource('p1/b/2.js')),
@@ -265,7 +257,7 @@ describe("MapUpdateTask", function() {
           }));
       });
 
-    var task = new MapUpdateTask(finder, [configurationLoader], map);
+    var task = new MapUpdateTask(files, [configurationLoader], map);
     var changed;
 
     runs(function() {
@@ -288,9 +280,9 @@ describe("MapUpdateTask", function() {
   });
 
   it('should load resource when changed', function() {
-    var finder = createFinderSpy([
+    var finder = [
       ['sub/added.js', 1300000000000]
-    ]);
+    ];
     var map = new ResourceMap([]);
     var loader = new ResourceLoader();
     var task = new MapUpdateTask(finder, [loader], map);
@@ -309,35 +301,12 @@ describe("MapUpdateTask", function() {
     );
   });
 
-  it('should update resource when changed', function() {
-    var finder = createFinderSpy([
-      ['sub/changed.js', 1300000000000]
-    ]);
-    var old = addMtime(1200000000000, new Resource('sub/changed.js'));
-    var map = new ResourceMap([old]);
-    var loader = new ResourceLoader();
-    var task = new MapUpdateTask(finder, [loader], map);
-    spyOn(loader, 'updateFromPath')
-      .andCallFake(function(path, configuration, oldResource, callback) {
-        expect(path).toBe('sub/changed.js');
-        expect(oldResource).toBe(old);
-        callback(new MessageList(), new Resource('sub/changed.js'));
-      });
-
-    waitsForCallback(
-      function(callback) {
-        task.on('complete', callback).run();
-      },
-      function() {}
-    );
-  });
-
   it('should not load deleted resource', function() {
-    var finder = createFinderSpy([]);
+    var files = [];
     var old = addMtime(1200000000000, new Resource('sub/deleted.js'));
     var map = new ResourceMap([old]);
     var loader = new ResourceLoader();
-    var task = new MapUpdateTask(finder, [loader], map);
+    var task = new MapUpdateTask(files, [loader], map);
     spyOn(loader, 'loadFromPath');
 
     waitsForCallback(
@@ -351,13 +320,13 @@ describe("MapUpdateTask", function() {
   });
 
   it('should aggregate messages from loaders', function() {
-    var finder = createFinderSpy([
+    var files = [
       ['sub/new1.js', 1300000000000],
       ['sub/new2.js', 1300000000000]
-    ]);
+    ];
     var map = new ResourceMap([]);
     var loader = new ResourceLoader();
-    var task = new MapUpdateTask(finder, [loader], map);
+    var task = new MapUpdateTask(files, [loader], map);
     spyOn(loader, 'loadFromPath')
       .andCallFake(function(path, configuration, callback) {
         var messages = new MessageList();
@@ -376,13 +345,13 @@ describe("MapUpdateTask", function() {
   });
 
   it('should aggregate messages from postProcess', function() {
-    var finder = createFinderSpy([
+    var files = [
       ['sub/new1.js', 1300000000000],
       ['sub/new2.js', 1300000000000]
-    ]);
+    ];
     var map = new ResourceMap([]);
     var loader = new ResourceLoader();
-    var task = new MapUpdateTask(finder, [loader], map);
+    var task = new MapUpdateTask(files, [loader], map);
     spyOn(loader, 'loadFromPath')
       .andCallFake(function(path, configuration, callback) {
         var messages = new MessageList();
@@ -393,6 +362,8 @@ describe("MapUpdateTask", function() {
 
     spyOn(loader, 'postProcess')
       .andCallFake(function(map, resources, callback) {
+        expect(resources.length).toBe(2);
+        expect(resources[0]).toEqual(jasmine.any(Resource));
         var messages = new MessageList();
         resources.forEach(function(resource) {
           messages.addError(resource.path, 'foo', 'bar');
