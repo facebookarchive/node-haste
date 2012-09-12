@@ -367,7 +367,7 @@ describe("MapUpdateTask", function() {
         var messages = new MessageList();
         resources.forEach(function(resource) {
           messages.addError(resource.path, 'foo', 'bar');
-        })
+        });
         callback(messages);
       });
 

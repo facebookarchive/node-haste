@@ -94,7 +94,7 @@ describe('extract', function() {
     it('should extract simplest case', function() {
       var code =
         'requireLazy(["foo", \'bar\'], function() {\n' +
-        '  return 2 + 2;\n'
+        '  return 2 + 2;\n';
         '});\n';
       expect(extract.requireLazyCalls(code)).toEqual(['foo', 'bar']);
     });
@@ -102,7 +102,7 @@ describe('extract', function() {
     it('should ingore invalid cases', function() {
       var code =
         'foo.requireLazy(["foo", \'bar\'], function() {\n' +
-        '  return 2 + 2;\n'
+        '  return 2 + 2;\n';
         '});\n';
       expect(extract.requireLazyCalls(code)).toEqual([]);
     });

@@ -59,7 +59,7 @@ describe('JSLoader', function() {
         expect(js.isModule).toBe(true);
         expect(js.isJavelin).toBe(true);
         expect(js.isRunWhenReady).toBe(true);
-        expect(js.id).toBe('javelin-tag');
+        expect(js.id).toBe('JX.MSteps');
         expect(js.requiredLegacyComponents)
           .toEqual(['javelin-dom', 'javelin-install', 'javelin-stratcom']);
       });
@@ -77,9 +77,7 @@ describe('JSLoader', function() {
 
   it('should exptract javelin symbols', function() {
     loadResouce(
-      new JSLoader({
-        javelinsymbolsPath: 'echo -e "\n+MSteps:13\n?JX.URL:11\n?JX.install:9"'
-      }),
+      new JSLoader(),
       path.join(testData, 'javelin.js'),
       null,
       function(errors, js) {
@@ -92,7 +90,6 @@ describe('JSLoader', function() {
   it('should exptract javelin symbols and networkSize', function() {
     loadResouce(
       new JSLoader({
-        javelinsymbolsPath: 'echo -e "\n+MSteps:13\n?JX.URL:11\n?JX.install:9"',
         networkSize: true
       }),
       path.join(testData, 'javelin.js'),

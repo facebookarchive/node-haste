@@ -15,18 +15,13 @@ describe('AnalyzeChangedTask', function() {
       var task = new AnalyzeChangedTask(
         [
           new loaders.JSLoader({
-            javelinsymbolsPath: '~/www/scripts/javelin/javelinsymbols',
             extractSpecialRequires: true,
             networkSize: true
           }),
           new loaders.CSSLoader({
             networkSize: true
           }),
-          new loaders.ImageLoader({
-            maxIdentifyThreads: 8,
-            networkSize: true,
-            identifyPath: 'gm identify'
-          }),
+          new loaders.ImageLoader(),
           new loaders.ProjectConfigurationLoader(),
           new loaders.ResourceLoader()
         ],
@@ -42,7 +37,6 @@ describe('AnalyzeChangedTask', function() {
         .toEqual(jasmine.any(loaders.ProjectConfigurationLoader));
       expect(task2.loaders[4]).toEqual(jasmine.any(loaders.ResourceLoader));
       expect(task2.loaders[0].options).toEqual({
-        javelinsymbolsPath: '~/www/scripts/javelin/javelinsymbols',
         extractSpecialRequires: true,
         networkSize: true
       });
@@ -134,7 +128,7 @@ describe('AnalyzeChangedTask', function() {
 
       waitsForCallback(
         function(callback) {
-          task.runInAFork([path.join(testData, 'module.js')], callback);
+          task.runInForks(1, [path.join(testData, 'module.js')], callback);
         },
         function(messages, resources, skipped) {
           expect(resources.length).toBe(1);
@@ -150,7 +144,8 @@ describe('AnalyzeChangedTask', function() {
 
       waitsForCallback(
         function(callback) {
-          task.runInAFork(
+          task.runInForks(
+            1,
             [path.join(testData, 'deprecated.js')],
             callback);
         },

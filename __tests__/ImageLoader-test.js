@@ -21,33 +21,19 @@ describe('Image', function() {
   var testData = path.join(__dirname, '..', '__test_data__', 'Image');
 
   it('should find the size of the picture', function() {
-    var resource = null;
-    var loader = new ImageLoader({
-      identifyPath: 'echo r:' + path.join(testData, 'a.jpg') + ' 900x596'
-    });
+    var loader = new ImageLoader();
     loadResouce(
       loader,
       path.join(testData, 'a.jpg'),
       null,
-      function(errors, r) {
-        loader.postProcess(new ResourceMap([r]), [r], function() {
-          processed = true;
-          resource = r;
-        });
+      function(errors, resource) {
+        expect(resource.width).toBe(900);
+        expect(resource.height).toBe(596);
       });
-
-    waitsFor(function() {
-      return resource;
-    }, 500);
-
-    runs(function() {
-      expect(resource.width).toBe(900);
-      expect(resource.height).toBe(596);
-    });
   });
 
   it('should calculate network size when asked', function() {
-    var loader = new ImageLoader({ networkSize: true });
+    var loader = new ImageLoader();
     loadResouce(
       loader,
       path.join(testData, 'a.jpg'),

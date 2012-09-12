@@ -21,6 +21,17 @@ describe('docblock', function() {
     expect(docblock.extract(code)).toBe('');
   });
 
+  it('should return extract and parsedocblock', function() {
+    var code =
+      '/** @provides intern-fbtrace-css */\n' +
+      '\n' +
+      '.dummy {}\n';
+
+    expect(docblock.parse(docblock.extract(code))).toEqual([
+      ['provides', 'intern-fbtrace-css']
+    ]);
+  });
+  return;
 
   it('should parse directives out of a docblock', function() {
     var code =
