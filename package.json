@@ -1,0 +1,8 @@
+{
+  "haste": {
+    "name": "node-haste"
+  },
+  "jstest": {
+    "useAutoMock": false
+  }
+}

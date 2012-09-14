@@ -31,7 +31,6 @@ describe('docblock', function() {
       ['provides', 'intern-fbtrace-css']
     ]);
   });
-  return;
 
   it('should parse directives out of a docblock', function() {
     var code =
@@ -45,6 +44,20 @@ describe('docblock', function() {
       ['css', 'a b'],
       ['preserve-whitespace', '']
     ]);
+  });
+
+  it('should parse directives out of a docblock as an object', function() {
+    var code =
+      '/**\n' +
+      ' * @providesModule foo\n' +
+      ' * @css a b\n' +
+      ' * @preserve-whitespace\n' +
+      ' */';
+    expect(docblock.parseAsObject(code)).toEqual({
+      'providesModule': 'foo',
+      'css': 'a b',
+      'preserve-whitespace': ''
+    });
   });
 
   it('should parse directives out of a docblock with comments', function() {
