@@ -4,6 +4,9 @@
   "haste": {
     "name": "node-haste"
   },
+  "dependencies": {
+    "esprima": "https://github.com/facebook/esprima/tarball/a3e0ea3979eb8d54d8bfade220c272903f928b1e"
+  },
   "jstest": {
     "useAutoMock": false
   }
