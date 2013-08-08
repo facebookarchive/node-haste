@@ -1,4 +1,5 @@
 {
+  "name": "node-haste",
   "haste": {
     "name": "node-haste"
   },
