@@ -5,4 +5,4 @@
 var fs = require('fs');
 var temp = require('temp');
 
-require('mock-modules').map('why').map('are').map('we').map('here');
+require('mock-modules').dontMock('why').dontMock('are').dontMock('we').dontMock('here');

@@ -50,7 +50,7 @@ describe('JSBenchLoader', function() {
         path.join(testData, 'configured', 'package.json'),
         {}),
       function(errors, resource) {
-        expect(resource.id).toBe('configured/__benchmarks__/test-bench');
+        expect(resource.id).toBe('configured/__benchmarks__/test-bench.js');
       });
   });
 

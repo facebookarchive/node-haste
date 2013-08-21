@@ -27,7 +27,7 @@ describe('JSTestLoader', function() {
       function(errors, resource) {
         expect(resource.id).toBe('test-test');
         expect(resource.requiredModules)
-          .toEqual(['fs', 'temp', 'mock-modules', 'why', 'are', 'we', 'here']);
+          .toEqual(['fs', 'temp', 'mock-modules']);
         expect(resource.contacts)
           .toEqual(['javascript@lists.facebook.com', 'voloko@fb.com']);
       });

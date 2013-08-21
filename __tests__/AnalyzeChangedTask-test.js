@@ -30,12 +30,6 @@ describe('AnalyzeChangedTask', function() {
       var task2 = AnalyzeChangedTask.fromObject(task.toObject());
 
       expect(task2.loaders.length).toBe(5);
-      expect(task2.loaders[0]).toEqual(jasmine.any(loaders.JSLoader));
-      expect(task2.loaders[1]).toEqual(jasmine.any(loaders.CSSLoader));
-      expect(task2.loaders[2]).toEqual(jasmine.any(loaders.ImageLoader));
-      expect(task2.loaders[3])
-        .toEqual(jasmine.any(loaders.ProjectConfigurationLoader));
-      expect(task2.loaders[4]).toEqual(jasmine.any(loaders.ResourceLoader));
       expect(task2.loaders[0].options).toEqual({
         extractSpecialRequires: true,
         networkSize: true
