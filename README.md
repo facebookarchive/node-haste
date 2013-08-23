@@ -16,23 +16,24 @@ Once scanned it will update the map with the new data.
 
 ###EXAMPLE
 
-  var Haste = require('node-haste/Haste');
-  var loaders = require('node-haste/loaders');
+    var Haste = require('node-haste/Haste');
+    var loaders = require('node-haste/loaders');
 
-  // configure haste facade
-  var haste = new Haste(
-  [
-    new loaders.JSLoader({ networkSize: true }),
-    new loaders.CSSLoader({ networkSize: true }),
-    new ProjectConfigurationLoader(),
-    new ResourceLoader()
-  ],
-  ['html']);
+    // configure haste facade
+    var haste = new Haste(
+      [
+        new loaders.JSLoader({ networkSize: true }),
+        new loaders.CSSLoader({ networkSize: true }),
+        new ProjectConfigurationLoader(),
+        new ResourceLoader()
+      ],
+      ['html']
+    );
 
-  // return current map, utilizing cache if available
-  haste.update('.cache', function(map) {
-    assert(map instanceof ResourceMap);
-  });
+    // return current map, utilizing cache if available
+    haste.update('.cache', function(map) {
+      assert(map instanceof ResourceMap);
+    });
 
 
 ###TESTING
@@ -40,5 +41,5 @@ Once scanned it will update the map with the new data.
 Node haste is covered with unit tests. The unit tests use Jasmine. Any
 compatible runner can be used to run the tests.
 
-  npm install jasmine-node
-  jasmine-node --matchall __tests__/
+    npm install jasmine-node
+    jasmine-node --matchall __tests__/
