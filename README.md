@@ -3,7 +3,7 @@
 Node Haste is a dependency management system for static resources for node.js
 
 
-HOW DOES IT WORK?
+###HOW DOES IT WORK?
 
 The goal of node haste is to build or update a map of static resources in given
 directories. For that it scans provided directories for static resources: JS,
@@ -14,7 +14,7 @@ information: dependencies, processing options, size, etc.
 Once scanned it will update the map with the new data.
 
 
-EXAMPLE
+###EXAMPLE
 
   var Haste = require('node-haste/Haste');
   var loaders = require('node-haste/loaders');
@@ -35,7 +35,7 @@ EXAMPLE
   });
 
 
-TESTING
+###TESTING
 
 Node haste is covered with unit tests. The unit tests use Jasmine. Any
 compatible runner can be used to run the tests.
