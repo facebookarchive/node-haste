@@ -1,9 +1,9 @@
-#node-haste
+# node-haste
 
 Node Haste is a dependency management system for static resources for node.js
 
 
-###HOW DOES IT WORK?
+## How Does It Work?
 
 The goal of node haste is to build or update a map of static resources in given
 directories. For that it scans provided directories for static resources: JS,
@@ -14,32 +14,36 @@ information: dependencies, processing options, size, etc.
 Once scanned it will update the map with the new data.
 
 
-###EXAMPLE
+## Example
 
-    var Haste = require('node-haste/Haste');
-    var loaders = require('node-haste/loaders');
+```js
+var Haste = require('node-haste/Haste');
+var loaders = require('node-haste/loaders');
 
-    // configure haste facade
-    var haste = new Haste(
-      [
-        new loaders.JSLoader({ networkSize: true }),
-        new loaders.CSSLoader({ networkSize: true }),
-        new ProjectConfigurationLoader(),
-        new ResourceLoader()
-      ],
-      ['html']
-    );
+// configure haste facade
+var haste = new Haste(
+  [
+    new loaders.JSLoader({ networkSize: true }),
+    new loaders.CSSLoader({ networkSize: true }),
+    new ProjectConfigurationLoader(),
+    new ResourceLoader()
+  ],
+  ['html']
+);
 
-    // return current map, utilizing cache if available
-    haste.update('.cache', function(map) {
-      assert(map instanceof ResourceMap);
-    });
+// return current map, utilizing cache if available
+haste.update('.cache', function(map) {
+  assert(map instanceof ResourceMap);
+});
+```
 
 
-###TESTING
+## Testing
 
 Node haste is covered with unit tests. The unit tests use Jasmine. Any
 compatible runner can be used to run the tests.
 
-    npm install jasmine-node
-    jasmine-node --matchall __tests__/
+```sh
+$ npm install jasmine-node
+$ jasmine-node --matchall __tests__/
+```
