@@ -30,7 +30,7 @@ describe('docblock', function() {
   });
 
   it('should return nothing for no docblock', function() {
-    var code = '/*\n * @providesModule foo\n*/\nvar x = foo;\n/**foo*/';
+    var code = '';
     expect(docblock.extract(code)).toBe('');
   });
 
