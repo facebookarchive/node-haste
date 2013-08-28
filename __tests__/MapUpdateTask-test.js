@@ -136,7 +136,7 @@ describe("MapUpdateTask", function() {
       addMtime(1300000000000, new Resource('p1/a/1.js')),
       addMtime(1300000000000, new Resource('p1/b/2.js')),
       addMtime(1300000000000, new ProjectConfiguration('p1/package.json', {
-        haste: { roots: ['a'] }
+        haste: { roots: ['b'] }
       }))
     ]);
     var task = new MapUpdateTask(files, [], map);
@@ -156,6 +156,7 @@ describe("MapUpdateTask", function() {
     runs(function() {
       expectChanges(changed, [
         ['changed', 'p1/a/1.js'],
+        ['changed', 'p1/b/2.js'],
         ['removed', 'p1/package.json']
       ]);
     });
@@ -257,7 +258,7 @@ describe("MapUpdateTask", function() {
       addMtime(1300000000000, new Resource('p1/a/1.js')),
       addMtime(1300000000000, new Resource('p1/b/2.js')),
       addMtime(1200000000000, new ProjectConfiguration('p1/package.json', {
-        haste: { roots: ['a'] }
+        haste: { roots: ['b'] }
       }))
     ]);
     var configurationLoader = new ProjectConfigurationLoader();
@@ -266,7 +267,7 @@ describe("MapUpdateTask", function() {
         callback(
           new MessageList(),
           new ProjectConfiguration('p1/package.json', {
-            haste: { roots: ['a'] }
+            haste: { roots: ['b'] }
           }));
       });
 
@@ -287,6 +288,7 @@ describe("MapUpdateTask", function() {
     runs(function() {
       expectChanges(changed, [
         ['changed', 'p1/a/1.js'],
+        ['changed', 'p1/b/2.js'],
         ['changed', 'p1/package.json']
       ]);
     });
