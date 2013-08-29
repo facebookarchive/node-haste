@@ -19,6 +19,7 @@
 describe("FileFinder", function() {
   var path = require('path');
   var finder = require('../lib/FileFinder');
+  var join = path.join;
 
   var workingDir = path.join(__dirname, '..', '__test_data__', 'FileFinder');
 
@@ -38,12 +39,13 @@ describe("FileFinder", function() {
       var files = result.map(function(r) {
         return r[0];
       });
-      expect(files.join('\n')).toContain('sub/1.js');
-      expect(files.join('\n')).toContain('sub/2.js');
+      expect(files.join('\n')).toContain(join('sub', '1.js'));
+      expect(files.join('\n')).toContain(join('sub', '2.js'));
       expect(files.join('\n')).toContain('3.js');
     });
   });
-
+  
+// TODO: work on native find on windows
   it("should find files in a directory using native find", function() {
     var result;
     runs(function() {
@@ -60,8 +62,8 @@ describe("FileFinder", function() {
       var files = result.map(function(r) {
         return r[0];
       });
-      expect(files.join('\n')).toContain('sub/1.js');
-      expect(files.join('\n')).toContain('sub/2.js');
+      expect(files.join('\n')).toContain(join('sub', '1.js'));
+      expect(files.join('\n')).toContain(join('sub', '2.js'));
       expect(files.join('\n')).toContain('3.js');
     });
   });

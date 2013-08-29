@@ -76,4 +76,5 @@ describe('CSSLoader', function() {
         expect(css.networkSize > 0).toBe(true);
       });
   });
+
 });
