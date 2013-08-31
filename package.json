@@ -9,6 +9,9 @@
   },
   "jstest": {
     "useAutoMock": false
+  },
+  "scripts": {
+    "test": "jasmine-node --matchall __tests__"
   }
 }
 
