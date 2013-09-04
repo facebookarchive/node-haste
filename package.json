@@ -4,6 +4,7 @@
   "haste": {
     "name": "node-haste"
   },
+  "main": "main.js",
   "dependencies": {
     "esprima-fb": "1001.1001.1000-dev-harmony-fb"
   },
