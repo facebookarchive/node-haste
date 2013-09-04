@@ -13,6 +13,10 @@
   },
   "scripts": {
     "test": "jasmine-node --matchall __tests__"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/facebook/node-haste.git"
   }
 }
 
