@@ -17,8 +17,8 @@ Once scanned it will update the map with the new data.
 ## Example
 
 ```js
-var Haste = require('node-haste/Haste');
-var loaders = require('node-haste/loaders');
+var Haste = require('node-haste').Haste;
+var loaders = require('node-haste').loaders;
 
 // configure haste facade
 var haste = new Haste(
