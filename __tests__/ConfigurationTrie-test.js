@@ -19,15 +19,16 @@
 describe('ConfigurationTrie', function() {
   var ConfigurationTrie = require('../lib/ConfigurationTrie');
   var ProjectConfiguration = require('../lib/resource/ProjectConfiguration');
+  var path = require("path");
 
   it('should match subpath', function() {
-    var config = new ProjectConfiguration('a/b/package.json', {});
+    var config = new ProjectConfiguration(['a','b','package.json'].join(path.sep), {});
     var trie = new ConfigurationTrie([config]);
 
-    expect(trie.findConfiguration('a/b/a.js')).toBe(config);
-    expect(trie.findConfiguration('a/a.js')).toBe(undefined);
-    expect(trie.findConfiguration('a/b/c/d.js')).toBe(config);
-    expect(trie.findConfiguration('a/b.js')).toBe(undefined);
+    expect(trie.findConfiguration(['a','b','a.js'].join(path.sep))).toBe(config);
+    expect(trie.findConfiguration(['a','a.js'].join(path.sep))).toBe(undefined);
+    expect(trie.findConfiguration(['a','b','c','d.js'].join(path.sep))).toBe(config);
+    expect(trie.findConfiguration(['a','b.js'].join(path.sep))).toBe(undefined);
   });
 
 
@@ -39,31 +40,31 @@ describe('ConfigurationTrie', function() {
       });
     var trie = new ConfigurationTrie([config]);
 
-    expect(trie.findConfiguration('a/b/a.js')).toBe(undefined);
-    expect(trie.findConfiguration('a/b/c/a.js')).toBe(config);
-    expect(trie.findConfiguration('a/b/d/d.js')).toBe(config);
+    expect(trie.findConfiguration(['a','b','a.js'].join(path.sep))).toBe(undefined);
+    expect(trie.findConfiguration(['a','b','c','a.js'].join(path.sep))).toBe(config);
+    expect(trie.findConfiguration(['a','b','d','d.js'].join(path.sep))).toBe(config);
   });
 
 
   it('should match subpath with 2 configurations', function() {
-    var config1 = new ProjectConfiguration('a/b/package.json', {});
-    var config2 = new ProjectConfiguration('a/c/package.json', {});
+    var config1 = new ProjectConfiguration(['a','b','package.json'].join(path.sep), {});
+    var config2 = new ProjectConfiguration(['a','c','package.json'].join(path.sep), {});
     var trie = new ConfigurationTrie([config1, config2]);
 
-    expect(trie.findConfiguration('a/b/a.js')).toBe(config1);
-    expect(trie.findConfiguration('a/c/c/d.js')).toBe(config2);
+    expect(trie.findConfiguration(['a','b','a.js'].join(path.sep))).toBe(config1);
+    expect(trie.findConfiguration(['a','c','c','d.js'].join(path.sep))).toBe(config2);
   });
 
 
   it('should match nested configurations', function() {
-    var config1 = new ProjectConfiguration('a/b/package.json', {});
+    var config1 = new ProjectConfiguration(['a','b','package.json'].join(path.sep), {});
     var config2 =
-      new ProjectConfiguration('a/b/c/package.json', {});
+      new ProjectConfiguration(['a','b','c','package.json'].join(path.sep), {});
     var trie = new ConfigurationTrie([config1, config2]);
 
-    expect(trie.findConfiguration('a/b/a.js')).toBe(config1, 'a/b/a.js');
-    expect(trie.findConfiguration('a/b/c.js')).toBe(config1, 'a/b/c.js');
-    expect(trie.findConfiguration('a/b/c/d.js')).toBe(config2, 'a/b/c/d.js');
+    expect(trie.findConfiguration(['a','b','a.js'].join(path.sep))).toBe(config1, ['a','b','a.js'].join(path.sep));
+    expect(trie.findConfiguration(['a','b','c.js'].join(path.sep))).toBe(config1, ['a','b','c.js'].join(path.sep));
+    expect(trie.findConfiguration(['a','b','c','d.js'].join(path.sep))).toBe(config2, ['a','b','c','d.js'].join(path.sep));
   });
 
 });
