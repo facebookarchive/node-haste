@@ -124,7 +124,7 @@ describe('JSLoader', function() {
         path.join(testData, 'configured', 'package.json'),
         {}),
       function(errors, js) {
-        expect(js.id).toBe('configured/a.js');
+        expect(js.id).toBe(['configured','a.js'].join(path.sep));
         expect(js.requiredCSS).toEqual(['foo-css']);
       });
   });
