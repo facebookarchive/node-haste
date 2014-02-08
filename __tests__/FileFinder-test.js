@@ -38,8 +38,8 @@ describe("FileFinder", function() {
       var files = result.map(function(r) {
         return r[0];
       });
-      expect(files.join('\n')).toContain('sub/1.js');
-      expect(files.join('\n')).toContain('sub/2.js');
+      expect(files.join('\n')).toContain(['sub','1.js'].join(path.sep));
+      expect(files.join('\n')).toContain(['sub','2.js'].join(path.sep));
       expect(files.join('\n')).toContain('3.js');
     });
   });
@@ -60,8 +60,8 @@ describe("FileFinder", function() {
       var files = result.map(function(r) {
         return r[0];
       });
-      expect(files.join('\n')).toContain('sub/1.js');
-      expect(files.join('\n')).toContain('sub/2.js');
+      expect(files.join('\n')).toContain(['sub','2.js'].join(path.sep));
+      expect(files.join('\n')).toContain(['sub','2.js'].join(path.sep));
       expect(files.join('\n')).toContain('3.js');
     });
   });
