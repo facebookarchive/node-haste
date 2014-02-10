@@ -17,7 +17,7 @@
  */
 
 describe('ProjectConfiguration', function() {
-  var path = require("path");
+  var path = require('path');
   var ProjectConfiguration = require('../lib/resource/ProjectConfiguration');
 
   it('should return non-haste affecteded roots', function() {
@@ -31,7 +31,7 @@ describe('ProjectConfiguration', function() {
       { haste: {
         roots: ['lib', 'tests']
       }});
-    expect(resource.getHasteRoots()).toEqual([['a','b','lib'].join(path.sep), ['a','b','tests'].join(path.sep)]);
+    expect(resource.getHasteRoots()).toEqual([path.join('a','b','lib'), path.join('a','b','tests')]);
   });
 
   it('should resolve id with a prefix', function() {
@@ -41,7 +41,7 @@ describe('ProjectConfiguration', function() {
         roots: ['lib', 'tests'],
         prefix: "bar"
       }});
-    expect(resource.resolveID(['a','b','lib','foo'].join(path.sep))).toEqual(['bar','foo'].join(path.sep));
+    expect(resource.resolveID(path.join('a','b','lib','foo'))).toEqual(path.join('bar','foo'));
   });
 
   it('should resolve id without a prefix', function() {
@@ -51,7 +51,7 @@ describe('ProjectConfiguration', function() {
         roots: ['lib', 'tests'],
         prefix: ""
       }});
-    expect(resource.resolveID(['a','b','lib','foo'].join(path.sep))).toEqual('foo');
+    expect(resource.resolveID(path.join('a','b','lib','foo'))).toEqual('foo');
   });
 
 });

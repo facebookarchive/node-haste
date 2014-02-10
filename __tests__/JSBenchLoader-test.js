@@ -63,7 +63,7 @@ describe('JSBenchLoader', function() {
         path.join(testData, 'configured', 'package.json'),
         {}),
       function(errors, resource) {
-        expect(resource.id).toBe(['configured','__benchmarks__','test-bench.js'].join(path.sep));
+        expect(resource.id).toBe(path.join('configured','__benchmarks__','test-bench.js'));
       });
   });
 
