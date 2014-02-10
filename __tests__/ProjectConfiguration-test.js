@@ -22,7 +22,7 @@ describe('ProjectConfiguration', function() {
 
   it('should return non-haste affecteded roots', function() {
     var resource = new ProjectConfiguration('a/b/package.json', {});
-    expect(resource.getHasteRoots()).toEqual(['a/b']);
+    expect(resource.getHasteRoots()).toEqual([path.join('a','b')]);
   });
 
   it('should return haste affecteded roots', function() {
