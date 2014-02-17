@@ -27,6 +27,7 @@ describe("MapUpdateTask", function() {
   var MessageList = require('../lib/MessageList');
 
   var waitsForCallback = require('../lib/test_helpers/waitsForCallback');
+  var node_path = require('path');
 
   function expectChanges(changed, expected) {
     expect(changed.length).toBe(expected.length);
@@ -84,9 +85,9 @@ describe("MapUpdateTask", function() {
 
     runs(function() {
       expectChanges(changed, [
-        ['added', 'sub/added.js'],
-        ['removed', 'sub/removed.js'],
-        ['changed', 'changed.js']
+        ['added', node_path.join('sub','added.js')],
+        ['removed', node_path.join('sub','removed.js')],
+        ['changed', node_path.join('changed.js')]
       ]);
     });
   });
@@ -120,9 +121,9 @@ describe("MapUpdateTask", function() {
 
     runs(function() {
       expectChanges(changed, [
-        ['changed', 'p1/a/1.js'],
-        ['changed', 'p1/b/2.js'],
-        ['removed', 'p1/package.json']
+        ['changed', node_path.join('p1','a','1.js')],
+        ['changed', node_path.join('p1','b','2.js')],
+        ['removed', node_path.join('p1','package.json')]
       ]);
     });
   });
@@ -155,8 +156,8 @@ describe("MapUpdateTask", function() {
 
     runs(function() {
       expectChanges(changed, [
-        ['changed', 'p1/a/1.js'],
-        ['removed', 'p1/package.json']
+        ['changed', node_path.join('p1','a','1.js')],
+        ['removed', node_path.join('p1','package.json')]
       ]);
     });
   });
@@ -195,9 +196,9 @@ describe("MapUpdateTask", function() {
 
     runs(function() {
       expectChanges(changed, [
-        ['changed', 'p1/a/1.js'],
-        ['changed', 'p1/b/2.js'],
-        ['added', 'p1/package.json']
+        ['changed', node_path.join('p1','a','1.js')],
+        ['changed', node_path.join('p1','b','2.js')],
+        ['added', node_path.join('p1','package.json')]
       ]);
     });
   });
@@ -218,7 +219,7 @@ describe("MapUpdateTask", function() {
     var configurationLoader = new ProjectConfigurationLoader();
     spyOn(configurationLoader, 'loadFromPath')
       .andCallFake(function(path, configuration, callback) {
-        expect(path).toBe('p1/package.json');
+        expect(path).toBe(node_path.join('p1','package.json'));
         callback(
           new MessageList(),
           new ProjectConfiguration('p1/package.json', {}));
@@ -240,9 +241,9 @@ describe("MapUpdateTask", function() {
 
     runs(function() {
       expectChanges(changed, [
-        ['changed', 'p1/a/1.js'],
-        ['changed', 'p1/b/2.js'],
-        ['changed', 'p1/package.json']
+        ['changed', node_path.join('p1','a','1.js')],
+        ['changed', node_path.join('p1','b','2.js')],
+        ['changed', node_path.join('p1','package.json')]
       ]);
     });
   });
@@ -286,8 +287,8 @@ describe("MapUpdateTask", function() {
 
     runs(function() {
       expectChanges(changed, [
-        ['changed', 'p1/a/1.js'],
-        ['changed', 'p1/package.json']
+        ['changed', node_path.join('p1','a','1.js')],
+        ['changed', node_path.join('p1','package.json')]
       ]);
     });
   });
@@ -301,7 +302,7 @@ describe("MapUpdateTask", function() {
     var task = new MapUpdateTask(finder, [loader], map);
     spyOn(loader, 'loadFromPath')
       .andCallFake(function(path, configuration, callback) {
-        expect(path).toBe('sub/added.js');
+        expect(path).toBe(node_path.join('sub','added.js'));
         callback(new MessageList(), new Resource('sub/added.js'));
       });
 
