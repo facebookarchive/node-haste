@@ -64,45 +64,6 @@ describe('extract', function() {
     });
   });
 
-
-  describe('requireDynamic', function() {
-    it('should ingore non require', function() {
-      var code =
-        'requireDynamic("foo");\n' +
-        'foo.requireDynamic("something");\n' +
-        'foo_requireDynamic("something_new");\n' +
-        'var b = [requireDynamic("bar")];\n';
-      expect(extract.requireDynamicCalls(code)).toEqual(['foo', 'bar']);
-    });
-
-    it('should dedupe matches', function() {
-      var code =
-        'requireDynamic("foo");\n' +
-        'var b = requireDynamic("foo");\n';
-      expect(extract.requireDynamicCalls(code)).toEqual(['foo']);
-    });
-  });
-
-
-  describe('requireDynamic', function() {
-    it('should ingore non require', function() {
-      var code =
-        'requireDynamic("foo");\n' +
-        'foo.requireDynamic("something");\n' +
-        'foo_requireDynamic("something_new");\n' +
-        'var b = [requireDynamic("bar")];\n';
-      expect(extract.requireDynamicCalls(code)).toEqual(['foo', 'bar']);
-    });
-
-    it('should dedupe matches', function() {
-      var code =
-        'requireDynamic("foo");\n' +
-        'var b = requireDynamic("foo");\n';
-      expect(extract.requireDynamicCalls(code)).toEqual(['foo']);
-    });
-  });
-
-
   describe('requireLazy', function() {
     it('should extract simplest case', function() {
       var code =
