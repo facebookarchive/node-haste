@@ -1,6 +1,6 @@
 {
   "name": "node-haste",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "haste": {
     "name": "node-haste"
   },
