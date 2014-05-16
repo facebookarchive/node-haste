@@ -1,6 +1,6 @@
 {
   "name": "node-haste",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "haste": {
     "name": "node-haste"
   },
@@ -19,4 +19,3 @@
     "url": "https://github.com/facebook/node-haste.git"
   }
 }
-
