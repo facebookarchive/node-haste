@@ -17,5 +17,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/facebook/node-haste.git"
+  },
+  "devDependencies": {
+    "jasmine-node": "~1.13.0"
   }
 }

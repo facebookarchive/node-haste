@@ -44,6 +44,6 @@ Node haste is covered with unit tests. The unit tests use Jasmine. Any
 compatible runner can be used to run the tests.
 
 ```sh
-$ npm install jasmine-node
-$ jasmine-node --matchall __tests__/
+$ npm install
+$ npm test
 ```
