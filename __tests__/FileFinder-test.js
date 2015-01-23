@@ -52,6 +52,43 @@ describe("FileFinder", function() {
     });
   });
 
+  describe('symbolic links', function() {
+
+    var test_symlinks = function(useNative) {
+      it('should be followed with native mode ' + (useNative ? 'enabled' : 'disabled'), function() {
+        var result,
+
+        find = new finder({
+          scanDirs: [workingDir],
+          extensions: ['.css'],
+          useNative: useNative,
+          followSymlinks: true,
+          ignore: null
+        });
+
+        runs(function() {
+          find.find(function(files) {
+            result = files;
+          });
+        });
+
+        waitsFor(function() {
+          return result;
+        }, 300);
+
+        runs(function() {
+          var files = result.map(function(r) {
+            return r[0];
+          });
+          expect(files.join('\n')).toContain('fb-sprite.css');
+        });
+      });
+    };
+
+    test_symlinks.call(this, true);
+    test_symlinks.call(this, false);
+  });
+
   it("should find files in a directory", function() {
     var result;
     runs(function() {
