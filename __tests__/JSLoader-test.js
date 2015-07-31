@@ -79,7 +79,7 @@ describe('JSLoader', function() {
       });
   });
 
-  it('should exptract network size', function() {
+  it('should extract network size', function() {
     loadResouce(
       new JSLoader({ networkSize: true }),
       path.join(testData, 'javelin.js'),
@@ -89,7 +89,7 @@ describe('JSLoader', function() {
       });
   });
 
-  it('should exptract javelin symbols', function() {
+  it('should extract javelin symbols', function() {
     loadResouce(
       new JSLoader(),
       path.join(testData, 'javelin.js'),
@@ -101,7 +101,7 @@ describe('JSLoader', function() {
       });
   });
 
-  it('should exptract javelin symbols and networkSize', function() {
+  it('should extract javelin symbols and networkSize', function() {
     loadResouce(
       new JSLoader({
         networkSize: true
