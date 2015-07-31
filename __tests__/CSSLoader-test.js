@@ -30,7 +30,7 @@ describe('CSSLoader', function() {
 
   var testData = path.join(__dirname, '..', '__test_data__', 'CSS');
 
-  it('should exptract component name', function() {
+  it('should extract component name', function() {
     loadResouce(
       new CSSLoader(),
       path.join(testData, 'plain.css'),
@@ -54,7 +54,7 @@ describe('CSSLoader', function() {
       });
   });
 
-  it('should exptract css sprites', function() {
+  it('should extract css sprites', function() {
     loadResouce(
       new CSSLoader({ extractFBSprites: true }),
       path.join(testData, 'fb-sprite.css'),
@@ -67,7 +67,7 @@ describe('CSSLoader', function() {
       });
   });
 
-  it('should exptract network size', function() {
+  it('should extract network size', function() {
     loadResouce(
       new CSSLoader({ networkSize: true }),
       path.join(testData, 'fb-sprite.css'),
