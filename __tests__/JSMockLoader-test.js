@@ -39,6 +39,24 @@ describe('JSMockLoader', function() {
     expect(loader.matchPath('a/1.css')).toBe(false);
   });
 
+  it('should match mocks with the specified file extensions', function() {
+    var loader = new JSMockLoader({ extensions: ['.coffee', '.js'] });
+    expect(loader.matchPath('__mocks__/x.js')).toBe(true);
+    expect(loader.matchPath('__mocks__/x.jsx')).toBe(false);
+    expect(loader.matchPath('__mocks__/x.coffee')).toBe(true);
+    expect(loader.matchPath('__mocks__/x.md')).toBe(false);
+    expect(loader.matchPath('__mocks__/x.litcoffee')).toBe(false);
+  });
+
+  it('should match mocks with the default file extension', function() {
+    var loader = new JSMockLoader();
+    expect(loader.matchPath('__mocks__/x.js')).toBe(true);
+    expect(loader.matchPath('__mocks__/x.jsx')).toBe(false);
+    expect(loader.matchPath('__mocks__/x.coffee')).toBe(false);
+    expect(loader.matchPath('__mocks__/x.md')).toBe(false);
+    expect(loader.matchPath('__mocks__/x.litcoffee')).toBe(false);
+  });
+
   var testData = path.join(__dirname, '..', '__test_data__', 'JSMock');
 
   it('should extract dependencies', function() {
