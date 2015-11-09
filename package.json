@@ -10,6 +10,7 @@
   "dependencies": {
     "absolute-path": "^0.0.0",
     "babel-cli": "^6.1.2",
+    "debug": "^2.2.0",
     "promise": "^7.0.4"
   },
   "devDependencies": {
