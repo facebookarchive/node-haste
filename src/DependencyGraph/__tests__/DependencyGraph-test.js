@@ -60,7 +60,8 @@ describe('DependencyGraph', function() {
       cache: new Cache(),
       fileWatcher,
       providesModuleNodeModules: [
-        'react-tools',
+        'haste-fbjs',
+        'react-haste',
         'react-native',
         // Parse requires AsyncStorage. They will
         // change that to require('react-native') which
@@ -2192,9 +2193,9 @@ describe('DependencyGraph', function() {
             'require("wontWork");',
           ].join('\n'),
           'node_modules': {
-            'react-tools': {
+            'react-haste': {
               'package.json': JSON.stringify({
-                name: 'react-tools',
+                name: 'react-haste',
                 main: 'main.js',
               }),
               'main.js': [
@@ -2260,7 +2261,7 @@ describe('DependencyGraph', function() {
             },
             {
               id: 'shouldWork',
-              path: '/root/node_modules/react-tools/main.js',
+              path: '/root/node_modules/react-haste/main.js',
               dependencies: ['submodule'],
               isAsset: false,
               isAsset_DEPRECATED: false,
@@ -2270,7 +2271,7 @@ describe('DependencyGraph', function() {
             },
             {
               id: 'submodule/main.js',
-              path: '/root/node_modules/react-tools/node_modules/submodule/main.js',
+              path: '/root/node_modules/react-haste/node_modules/submodule/main.js',
               dependencies: [],
               isAsset: false,
               isAsset_DEPRECATED: false,
@@ -2283,9 +2284,9 @@ describe('DependencyGraph', function() {
     });
 
     pit('should not be confused by prev occuring whitelisted names', function() {
-      var root = '/react-tools';
+      var root = '/react-haste';
       fs.__setMockFilesystem({
-        'react-tools': {
+        'react-haste': {
           'index.js': [
             '/**',
             ' * @providesModule index',
@@ -2293,9 +2294,9 @@ describe('DependencyGraph', function() {
             'require("shouldWork");',
           ].join('\n'),
           'node_modules': {
-            'react-tools': {
+            'react-haste': {
               'package.json': JSON.stringify({
-                name: 'react-tools',
+                name: 'react-haste',
                 main: 'main.js',
               }),
               'main.js': [
@@ -2312,12 +2313,12 @@ describe('DependencyGraph', function() {
         ...defaults,
         roots: [root],
       });
-      return getOrderedDependenciesAsJSON(dgraph, '/react-tools/index.js').then(function(deps) {
+      return getOrderedDependenciesAsJSON(dgraph, '/react-haste/index.js').then(function(deps) {
         expect(deps)
           .toEqual([
             {
               id: 'index',
-              path: '/react-tools/index.js',
+              path: '/react-haste/index.js',
               dependencies: ['shouldWork'],
               isAsset: false,
               isAsset_DEPRECATED: false,
@@ -2327,7 +2328,7 @@ describe('DependencyGraph', function() {
             },
             {
               id: 'shouldWork',
-              path: '/react-tools/node_modules/react-tools/main.js',
+              path: '/react-haste/node_modules/react-haste/main.js',
               dependencies: [],
               isAsset: false,
               isAsset_DEPRECATED: false,
