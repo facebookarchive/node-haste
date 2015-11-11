@@ -39,6 +39,7 @@ class DependencyGraph {
     platforms,
     cache,
     mocksPattern,
+    extractRequires,
   }) {
     this._opts = {
       activity: activity || defaultActivity,
@@ -51,6 +52,7 @@ class DependencyGraph {
       platforms: platforms || [],
       cache,
       mocksPattern,
+      extractRequires,
     };
     this._cache = this._opts.cache;
     this._helpers = new Helpers(this._opts);
@@ -91,7 +93,11 @@ class DependencyGraph {
 
     this._fastfs.on('change', this._processFileChange.bind(this));
 
-    this._moduleCache = new ModuleCache(this._fastfs, this._cache);
+    this._moduleCache = new ModuleCache(
+      this._fastfs,
+      this._cache,
+      this._opts.extractRequires
+    );
 
     this._hasteMap = new HasteMap({
       fastfs: this._fastfs,
