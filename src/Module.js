@@ -74,7 +74,7 @@ class Module {
   }
 
   getAsyncDependencies() {
-    return this._cache.get(this.path, 'asyncDependencies', () =>
+    return this._cache.get(this.path, 'dependencies', () =>
       this._read().then(data => data.asyncDependencies)
     );
   }
