@@ -38,6 +38,7 @@ class DependencyGraph {
     providesModuleNodeModules,
     platforms,
     cache,
+    mocksPattern,
   }) {
     this._opts = {
       activity: activity || defaultActivity,
@@ -49,9 +50,11 @@ class DependencyGraph {
       providesModuleNodeModules,
       platforms: platforms || [],
       cache,
+      mocksPattern,
     };
     this._cache = this._opts.cache;
     this._helpers = new Helpers(this._opts);
+    this._mocks = null;
     this.load().catch((err) => {
       // This only happens at initialization. Live errors are easier to recover from.
       console.error('Error building DepdendencyGraph:\n', err.stack);
@@ -110,6 +113,7 @@ class DependencyGraph {
     this._loading = Promise.all([
       this._fastfs.build()
         .then(() => {
+          this._findAllMocks();
           const hasteActivity = activity.startEvent('Building Haste Map');
           return this._hasteMap.build().then(() => activity.endEvent(hasteActivity));
         }),
@@ -142,6 +146,14 @@ class DependencyGraph {
         req.getAsyncDependencies(response),
       ]).then(() => response);
     });
+  }
+
+  // Returns a list of all the mocks if the `mocksPattern` option was specified.
+  // Mocks can be created for dynamic or generated modules which are not part
+  // of the dependency graph. This function gives access to all available
+  // mocks in all the roots.
+  getAllMocks() {
+    return this.load().then(() => this._mocks);
   }
 
   _getRequestPlatform(entryPath, platform) {
@@ -207,6 +219,21 @@ class DependencyGraph {
       }
       return this._loading;
     });
+  }
+
+  _findAllMocks() {
+    const mocksPattern = this._opts.mocksPattern;
+
+    // Take all mocks in all the roots into account. This is necessary
+    // because currently mocks are global: any module can be mocked by
+    // any mock in the system.
+    if (mocksPattern) {
+      this._mocks = Object.create(null);
+      this._fastfs.matchFilesByPattern(mocksPattern).forEach(file => {
+        const id = path.basename(file, path.extname(file));
+        this._mocks[id] = file;
+      });
+    }
   }
 }
 

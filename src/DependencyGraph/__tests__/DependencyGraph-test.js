@@ -3676,4 +3676,50 @@ describe('DependencyGraph', function() {
         });
     });
   });
+
+  describe('getAllMocks', () => {
+    pit('reurns null if mocksPattern is not specified', () => {
+      var root = '/root';
+      var dgraph = new DependencyGraph({
+        ...defaults,
+        roots: [root],
+      });
+
+      return dgraph.getAllMocks()
+        .then(mocks => {
+          expect(mocks).toBe(null);
+        });
+    });
+
+    pit('retrieves a list of all mocks', () => {
+      var root = '/root';
+      fs.__setMockFilesystem({
+        'root': {
+          '__mocks__': {
+            'A.js': '',
+            'b.js': '',
+          },
+          'b.js': [
+            '/**',
+            ' * @providesModule b',
+            ' */',
+          ].join('\n'),
+        },
+      });
+
+      var dgraph = new DependencyGraph({
+        ...defaults,
+        roots: [root],
+        mocksPattern: /(?:[\\/]|^)__mocks__[\\/]([^\/]+)\.js$/,
+      });
+
+      return dgraph.getAllMocks()
+        .then(mocks => {
+          expect(mocks).toEqual({
+            A: '/root/__mocks__/A.js',
+            b: '/root/__mocks__/b.js',
+          });
+        });
+    });
+  });
 });

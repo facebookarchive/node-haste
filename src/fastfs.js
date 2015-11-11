@@ -102,6 +102,12 @@ class Fastfs extends EventEmitter {
       .map(file => file.path);
   }
 
+  matchFilesByPattern(pattern) {
+    return this.getAllFiles()
+      .filter(file => file.path.match(pattern))
+      .map(file => file.path);
+  }
+
   readFile(filePath) {
     const file = this._getFile(filePath);
     if (!file) {

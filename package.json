@@ -28,6 +28,7 @@
   },
   "scripts": {
     "build": "rm -rf lib/; babel --presets=es2015,stage-2 --out-dir=lib src",
+    "watch": "babel --watch --presets=es2015,stage-2 --out-dir=lib src",
     "lint": "eslint .",
     "prepublish": "npm run lint && npm test && npm run build",
     "test": "npm run lint && NODE_ENV=test jest"
