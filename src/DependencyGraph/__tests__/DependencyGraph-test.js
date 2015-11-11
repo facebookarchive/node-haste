@@ -3680,6 +3680,9 @@ describe('DependencyGraph', function() {
   describe('getAllMocks', () => {
     pit('reurns null if mocksPattern is not specified', () => {
       var root = '/root';
+      fs.__setMockFilesystem({
+        'root': {},
+      });
       var dgraph = new DependencyGraph({
         ...defaults,
         roots: [root],
