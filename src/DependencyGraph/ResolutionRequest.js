@@ -24,6 +24,7 @@ class ResolutionRequest {
     helpers,
     moduleCache,
     fastfs,
+    mocks,
   }) {
     this._platform = platform;
     this._entryPath = entryPath;
@@ -32,6 +33,7 @@ class ResolutionRequest {
     this._helpers = helpers;
     this._moduleCache = moduleCache;
     this._fastfs = fastfs;
+    this._mocks = mocks;
     this._resetResolutionCache();
   }
 
@@ -110,8 +112,20 @@ class ResolutionRequest {
             depNames.map(name => this.resolveDependency(mod, name))
           ).then((dependencies) => [depNames, dependencies])
         ).then(([depNames, dependencies]) => {
+          if (this._mocks) {
+            return mod.getName().then(name => {
+              if (this._mocks[name]) {
+                const mockModule =
+                  this._moduleCache.getModule(this._mocks[name]);
+                depNames.push(name);
+                dependencies.push(mockModule);
+              }
+              return [depNames, dependencies];
+            });
+          }
+          return Promise.resolve([depNames, dependencies]);
+        }).then(([depNames, dependencies]) => {
           let p = Promise.resolve();
-
           const filteredPairs = [];
 
           dependencies.forEach((modDep, i) => {

@@ -137,6 +137,7 @@ class DependencyGraph {
         helpers: this._helpers,
         moduleCache: this._moduleCache,
         fastfs: this._fastfs,
+        mocks: this._mocks,
       });
 
       const response = new ResolutionResponse();
