@@ -73,12 +73,14 @@ class Module {
     );
   }
 
-  invalidate() {
-    this._cache.invalidate(this.path);
+  getAsyncDependencies() {
+    return this._cache.get(this.path, 'asyncDependencies', () =>
+      this._read().then(data => data.asyncDependencies)
+    );
   }
 
-  getAsyncDependencies() {
-    return this._read().then(data => data.asyncDependencies);
+  invalidate() {
+    this._cache.invalidate(this.path);
   }
 
   _read() {

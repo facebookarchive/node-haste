@@ -47,9 +47,15 @@ describe('Module', () => {
         fileWatcher,
         {crawling: Promise.resolve(['/root/index.js']), ignore: []},
       );
+      const cache = new Cache();
 
       return fastfs.build().then(() => {
-        const module = new Module('/root/index.js', fastfs, new ModuleCache(fastfs));
+        const module = new Module(
+          '/root/index.js',
+          fastfs,
+          new ModuleCache(fastfs, cache),
+          cache
+        );
 
         return module.getAsyncDependencies().then(actual =>
           expect(actual).toEqual(expected)
