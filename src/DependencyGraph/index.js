@@ -155,6 +155,10 @@ class DependencyGraph {
     });
   }
 
+  matchFilesByPattern(pattern) {
+    return this.load().then(() => this._fastfs.matchFilesByPattern(pattern));
+  }
+
   // Returns a list of all the mocks if the `mocksPattern` option was specified.
   // Mocks can be created for dynamic or generated modules which are not part
   // of the dependency graph. This function gives access to all available
