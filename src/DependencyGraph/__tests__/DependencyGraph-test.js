@@ -3677,6 +3677,66 @@ describe('DependencyGraph', function() {
     });
   });
 
+  describe('Extensions', () => {
+    pit('supports custom file extensions', () => {
+      var root = '/root';
+      fs.__setMockFilesystem({
+        'root': {
+          'index.jsx': [
+            '/**',
+            ' * @providesModule index',
+            ' */',
+            'require("a")',
+          ].join('\n'),
+          'a.coffee': [
+            '/**',
+            ' * @providesModule a',
+            ' */',
+          ].join('\n'),
+          'X.js': '',
+        },
+      });
+
+      var dgraph = new DependencyGraph({
+        ...defaults,
+        roots: [root],
+        extensions: ['jsx', 'coffee'],
+      });
+
+      return dgraph.matchFilesByPattern('.*')
+        .then(files => {
+          expect(files).toEqual([
+            '/root/index.jsx', '/root/a.coffee',
+          ]);
+        })
+        .then(() => getOrderedDependenciesAsJSON(dgraph, '/root/index.jsx'))
+        .then(deps => {
+          expect(deps).toEqual([
+            {
+              dependencies: ['a'],
+              id: 'index',
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              path: '/root/index.jsx',
+              resolution: undefined,
+            },
+            {
+              dependencies: [],
+              id: 'a',
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              path: '/root/a.coffee',
+              resolution: undefined,
+            },
+          ]);
+        });
+    });
+  });
+
   describe('Mocks', () => {
     pit('resolves to null if mocksPattern is not specified', () => {
       var root = '/root';
