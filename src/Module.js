@@ -30,9 +30,7 @@ class Module {
   }
 
   isHaste() {
-    return this._cache.get(this.path, 'haste', () =>
-      this._read().then(data => !!data.id)
-    );
+    return this._read().then(data => !!data.id);
   }
 
   getName() {
@@ -68,15 +66,11 @@ class Module {
   }
 
   getDependencies() {
-    return this._cache.get(this.path, 'dependencies', () =>
-      this._read().then(data => data.dependencies)
-    );
+    return this._read().then(data => data.dependencies);
   }
 
   getAsyncDependencies() {
-    return this._cache.get(this.path, 'dependencies', () =>
-      this._read().then(data => data.asyncDependencies)
-    );
+    return this._read().then(data => data.asyncDependencies);
   }
 
   invalidate() {
