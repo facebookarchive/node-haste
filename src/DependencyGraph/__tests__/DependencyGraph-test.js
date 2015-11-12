@@ -3677,24 +3677,30 @@ describe('DependencyGraph', function() {
     });
   });
 
-  describe('getAllMocks', () => {
-    pit('reurns null if mocksPattern is not specified', () => {
+  describe('Mocks', () => {
+    pit('resolves to null if mocksPattern is not specified', () => {
       var root = '/root';
       fs.__setMockFilesystem({
-        'root': {},
+        'root': {
+          '__mocks': {
+            'A.js': '',
+          },
+          'index.js': '',
+        },
       });
       var dgraph = new DependencyGraph({
         ...defaults,
         roots: [root],
       });
 
-      return dgraph.getAllMocks()
-        .then(mocks => {
-          expect(mocks).toBe(null);
+      return dgraph.getDependencies('/root/index.js')
+        .then(response => response.finalize())
+        .then(response => {
+          expect(response.mocks).toBe(null);
         });
     });
 
-    pit('retrieves a list of all mocks', () => {
+    pit('retrieves a list of all mocks in the system', () => {
       var root = '/root';
       fs.__setMockFilesystem({
         'root': {
@@ -3716,9 +3722,10 @@ describe('DependencyGraph', function() {
         mocksPattern: /(?:[\\/]|^)__mocks__[\\/]([^\/]+)\.js$/,
       });
 
-      return dgraph.getAllMocks()
-        .then(mocks => {
-          expect(mocks).toEqual({
+      return dgraph.getDependencies('/root/b.js')
+        .then(response => response.finalize())
+        .then(response => {
+          expect(response.mocks).toEqual({
             A: '/root/__mocks__/A.js',
             b: '/root/__mocks__/b.js',
           });

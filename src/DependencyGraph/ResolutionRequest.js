@@ -24,7 +24,6 @@ class ResolutionRequest {
     helpers,
     moduleCache,
     fastfs,
-    mocks,
   }) {
     this._platform = platform;
     this._entryPath = entryPath;
@@ -33,7 +32,6 @@ class ResolutionRequest {
     this._helpers = helpers;
     this._moduleCache = moduleCache;
     this._fastfs = fastfs;
-    this._mocks = mocks;
     this._resetResolutionCache();
   }
 
@@ -99,8 +97,10 @@ class ResolutionRequest {
       );
   }
 
-  getOrderedDependencies(response) {
-    return Promise.resolve().then(() => {
+  getOrderedDependencies(response, mocksPattern) {
+    return this._getAllMocks(mocksPattern).then(mocks => {
+      response.setMocks(mocks);
+
       const entry = this._moduleCache.getModule(this._entryPath);
       const visited = Object.create(null);
       visited[entry.hash()] = true;
@@ -112,11 +112,11 @@ class ResolutionRequest {
             depNames.map(name => this.resolveDependency(mod, name))
           ).then((dependencies) => [depNames, dependencies])
         ).then(([depNames, dependencies]) => {
-          if (this._mocks) {
+          if (mocks) {
             return mod.getName().then(name => {
-              if (this._mocks[name]) {
+              if (mocks[name]) {
                 const mockModule =
-                  this._moduleCache.getModule(this._mocks[name]);
+                  this._moduleCache.getModule(mocks[name]);
                 depNames.push(name);
                 dependencies.push(mockModule);
               }
@@ -175,6 +175,20 @@ class ResolutionRequest {
     }).then(asyncDependencies => asyncDependencies.forEach(
       (dependency) => response.pushAsyncDependency(dependency)
     ));
+  }
+
+  _getAllMocks(pattern) {
+    // Take all mocks in all the roots into account. This is necessary
+    // because currently mocks are global: any module can be mocked by
+    // any mock in the system.
+    let mocks = null;
+    if (pattern) {
+      mocks = Object.create(null);
+      this._fastfs.matchFilesByPattern(pattern).forEach(file =>
+        mocks[path.basename(file, path.extname(file))] = file
+      );
+    }
+    return Promise.resolve(mocks);
   }
 
   _resolveHasteDependency(fromModule, toModuleName) {
@@ -363,6 +377,7 @@ class ResolutionRequest {
   _resetResolutionCache() {
     this._immediateResolutionCache = Object.create(null);
   }
+
 }
 
 
