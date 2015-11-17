@@ -9,7 +9,7 @@
 
 'use strict';
 
-var docblockRe = /^\s*(\/\*\*(.|\r?\n)*?\*\/)/;
+var docblockRe = /^\s*(\/\*\*?(.|\r?\n)*?\*\/)/;
 
 var ltrimRe = /^\s*/;
 /**
