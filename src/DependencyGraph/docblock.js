@@ -9,7 +9,7 @@
 
 'use strict';
 
-var docblockRe = /^\s*(\/\*\*?(.|\r?\n)*?\*\/)/;
+var docblockRe = /^\s*(\/\*\*(.|\r?\n)*?\*\/)/;
 
 var ltrimRe = /^\s*/;
 /**
@@ -25,7 +25,7 @@ function extract(contents) {
 }
 
 
-var commentStartRe = /^\/\*\*?/;
+var commentStartRe = /^\/\*\*/;
 var commentEndRe = /\*\/$/;
 var wsRe = /[\t ]+/g;
 var stringStartRe = /(\r?\n|^) *\*/g;
