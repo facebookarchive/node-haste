@@ -17,6 +17,7 @@ module.exports = {
     return babel.transform(src, {
       filename,
       presets: ['es2015', 'stage-2'],
+      plugins: [require('fbjs-scripts/babel-6/inline-requires')],
       retainLines: true,
     }).code;
   },
