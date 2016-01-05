@@ -13,6 +13,7 @@ const fs = require('fs');
 const getCacheFilePath = require('./lib/getCacheFilePath');
 const isAbsolutePath = require('absolute-path');
 const loadCacheSync = require('./lib/loadCacheSync');
+const tmpdir = require('os').tmpDir();
 
 function getObjectValues(object) {
   return Object.keys(object).map(key => object[key]);
@@ -31,7 +32,7 @@ class Cache {
     resetCache,
     cacheKey,
   }) {
-    this._cacheFilePath = getCacheFilePath(cacheKey);
+    this._cacheFilePath = getCacheFilePath(tmpdir, cacheKey);
     if (!resetCache) {
       this._data = this._loadCacheSync(this._cacheFilePath);
     } else {
