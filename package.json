@@ -28,6 +28,7 @@
   "jest": {
     "rootDir": "src",
     "scriptPreprocessor": "<rootDir>/../jest/transform",
+    "testRunner": "<rootDir>/../node_modules/jest-cli/src/testRunners/jasmine/jasmine2.js",
     "unmockedModulePathPatterns": [
       "promise"
     ]
