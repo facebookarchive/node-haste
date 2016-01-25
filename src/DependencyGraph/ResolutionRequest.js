@@ -264,20 +264,33 @@ class ResolutionRequest {
     });
   }
 
+  _resolveFileOrDir(fromModule, toModuleName) {
+    const potentialModulePath = isAbsolutePath(toModuleName) ?
+        toModuleName :
+        path.join(path.dirname(fromModule.path), toModuleName);
+
+    return this._redirectRequire(fromModule, potentialModulePath).then(
+      realModuleName => this._tryResolve(
+        () => this._loadAsFile(realModuleName, fromModule, toModuleName),
+        () => this._loadAsDir(realModuleName, fromModule, toModuleName)
+      )
+    );
+  }
+
   _resolveNodeDependency(fromModule, toModuleName) {
     if (toModuleName[0] === '.' || toModuleName[1] === '/') {
-      const potentialModulePath = isAbsolutePath(toModuleName) ?
-              toModuleName :
-              path.join(path.dirname(fromModule.path), toModuleName);
-      return this._redirectRequire(fromModule, potentialModulePath).then(
-        realModuleName => this._tryResolve(
-          () => this._loadAsFile(realModuleName, fromModule, toModuleName),
-          () => this._loadAsDir(realModuleName, fromModule, toModuleName)
-        )
-      );
+      return this._resolveFileOrDir(fromModule, toModuleName);
     } else {
       return this._redirectRequire(fromModule, toModuleName).then(
         realModuleName => {
+          if (realModuleName[0] === '.' || realModuleName[1] === '/') {
+            // derive absolute path /.../node_modules/fromModuleDir/realModuleName
+            const fromModuleParentIdx = fromModule.path.lastIndexOf('node_modules/') + 13;
+            const fromModuleDir = fromModule.path.slice(0, fromModule.path.indexOf('/', fromModuleParentIdx));
+            const absPath = path.join(fromModuleDir, realModuleName);
+            return this._resolveFileOrDir(fromModule, absPath);
+          }
+
           const searchQueue = [];
           for (let currDir = path.dirname(fromModule.path);
                currDir !== path.parse(fromModule.path).root;
@@ -370,7 +383,13 @@ class ResolutionRequest {
         throw new UnableToResolveError(
           fromModule,
           toModule,
-          `Invalid directory ${potentialDirPath}`,
+`Invalid directory ${potentialDirPath}
+
+This might be related to https://github.com/facebook/react-native/issues/4968
+To resolve try the following:
+  1. Clear watchman watches: \`watchman watch-del-all\`.
+  2. Delete the \`node_modules\` folder: \`rm -rf node_modules && npm install\`.
+  3. Reset packager cache: \`rm -fr $TMPDIR/react-*\` or \`npm start -- --reset-cache\`.`,
         );
       }
 
