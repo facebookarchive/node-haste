@@ -103,7 +103,7 @@ class ResolutionRequest {
       );
   }
 
-  getOrderedDependencies(response, mocksPattern) {
+  getOrderedDependencies(response, mocksPattern, recursive = true) {
     return this._getAllMocks(mocksPattern).then(allMocks => {
       const entry = this._moduleCache.getModule(this._entryPath);
       const mocks = Object.create(null);
@@ -163,7 +163,9 @@ class ResolutionRequest {
             p = p.then(() => {
               if (!visited[modDep.hash()]) {
                 visited[modDep.hash()] = true;
-                return collect(modDep);
+                if (recursive) {
+                  return collect(modDep);
+                }
               }
               return null;
             });
@@ -384,7 +386,7 @@ class ResolutionRequest {
         throw new UnableToResolveError(
           fromModule,
           toModule,
-`Invalid directory ${potentialDirPath}
+`Unable to find this module in its module map or any of the node_modules directories under ${potentialDirPath} and its parent directories
 
 This might be related to https://github.com/facebook/react-native/issues/4968
 To resolve try the following:
