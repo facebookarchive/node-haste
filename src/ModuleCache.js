@@ -3,7 +3,7 @@
 const AssetModule = require('./AssetModule');
 const Package = require('./Package');
 const Module = require('./Module');
-const path = require('path');
+const path = require('fast-path');
 
 class ModuleCache {
 

@@ -7,7 +7,7 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 'use strict';
-const path = require('path');
+const path = require('fast-path');
 const getPlatformExtension = require('../lib/getPlatformExtension');
 const Promise = require('promise');
 
@@ -33,12 +33,12 @@ class HasteMap {
     this._map = Object.create(null);
 
     let promises = this._fastfs.findFilesByExts(this._extensions, {
-      ignore: (file) => this._helpers.isNodeModulesDir(file),
+      ignore: file => this._helpers.isNodeModulesDir(file),
     }).map(file => this._processHasteModule(file));
 
     promises = promises.concat(
       this._fastfs.findFilesByName('package.json', {
-        ignore: (file) => this._helpers.isNodeModulesDir(file),
+        ignore: file => this._helpers.isNodeModulesDir(file),
       }).map(file => this._processHastePackage(file))
     );
 

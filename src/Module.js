@@ -10,7 +10,7 @@
 
 const docblock = require('./DependencyGraph/docblock');
 const isAbsolutePath = require('absolute-path');
-const path = require('path');
+const path = require('fast-path');
 const extractRequires = require('./lib/extractRequires');
 
 class Module {

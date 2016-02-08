@@ -12,7 +12,7 @@ const Promise = require('promise');
 const {EventEmitter} = require('events');
 
 const fs = require('graceful-fs');
-const path = require('path');
+const path = require('fast-path');
 
 // workaround for https://github.com/isaacs/node-graceful-fs/issues/56
 // fs.close is patched, whereas graceful-fs.close is not.

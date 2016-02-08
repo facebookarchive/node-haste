@@ -1,7 +1,7 @@
 'use strict';
 
 const isAbsolutePath = require('absolute-path');
-const path = require('path');
+const path = require('fast-path');
 
 class Package {
 

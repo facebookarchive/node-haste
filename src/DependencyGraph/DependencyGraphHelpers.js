@@ -8,7 +8,7 @@
  */
 'use strict';
 
-const path = require('path');
+const path = require('fast-path');
 
 class DependencyGraphHelpers {
   constructor({ providesModuleNodeModules, assetExts }) {

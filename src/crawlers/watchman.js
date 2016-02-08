@@ -1,7 +1,7 @@
 'use strict';
 
 const Promise = require('promise');
-const path = require('path');
+const path = require('fast-path');
 
 function watchmanRecReadDir(roots, {ignore, fileWatcher, exts}) {
   const files = [];
