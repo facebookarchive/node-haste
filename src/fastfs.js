@@ -31,17 +31,13 @@ class Fastfs extends EventEmitter {
     this._name = name;
     this._fileWatcher = fileWatcher;
     this._ignore = ignore;
-    this._roots = roots.map(root => new File(root, { isDir: true }));
+    this._roots = roots.map(root => new File(root, true));
     this._fastPaths = Object.create(null);
     this._crawling = crawling;
     this._activity = activity;
   }
 
   build() {
-    const rootsPattern = new RegExp(
-      '^(' + this._roots.map(root => escapeRegExp(root.path)).join('|') + ')'
-    );
-
     return this._crawling.then(files => {
       let fastfsActivity;
       const activity = this._activity;
@@ -49,13 +45,15 @@ class Fastfs extends EventEmitter {
         fastfsActivity = activity.startEvent('Building in-memory fs for ' + this._name);
       }
       files.forEach(filePath => {
-        if (filePath.match(rootsPattern)) {
-          const newFile = new File(filePath, { isDir: false });
-          const parent = this._fastPaths[path.dirname(filePath)];
+        const root = this._getRoot(filePath);
+        if (root) {
+          const newFile = new File(filePath, false);
+          const dirname = filePath.substr(0, filePath.lastIndexOf('/'));
+          const parent = this._fastPaths[dirname];
           if (parent) {
             parent.addChild(newFile);
           } else {
-            this._add(newFile);
+            root.addChild(newFile);
             for (let file = newFile; file; file = file.parent) {
               if (!this._fastPaths[file.path]) {
                 this._fastPaths[file.path] = file;
@@ -205,10 +203,6 @@ class Fastfs extends EventEmitter {
     return this._fastPaths[filePath];
   }
 
-  _add(file) {
-    this._getAndAssertRoot(file.path).addChild(file);
-  }
-
   _processFileChange(type, filePath, root, fstat) {
     const absPath = path.join(root, filePath);
     if (this._ignore(absPath) || (fstat && fstat.isDirectory())) {
@@ -230,7 +224,7 @@ class Fastfs extends EventEmitter {
     delete this._fastPaths[path.normalize(absPath)];
 
     if (type !== 'delete') {
-      this._add(new File(absPath, { isDir: false }));
+      this._getAndAssertRoot(absPath).addChild(new File(absPath, false));
     }
 
     this.emit('change', type, filePath, root, fstat);
@@ -238,12 +232,10 @@ class Fastfs extends EventEmitter {
 }
 
 class File {
-  constructor(filePath, { isDir }) {
+  constructor(filePath, isDir) {
     this.path = filePath;
-    this.isDir = Boolean(isDir);
-    if (this.isDir) {
-      this.children = Object.create(null);
-    }
+    this.isDir = isDir;
+    this.children = this.isDir ? Object.create(null) : null;
   }
 
   read() {
@@ -271,8 +263,7 @@ class File {
   }
 
   addChild(file) {
-    const parts = path.relative(this.path, file.path).split(path.sep);
-
+    const parts = file.path.substr(this.path.length + 1).split(path.sep);
     if (parts.length === 0) {
       return;
     }
@@ -283,7 +274,7 @@ class File {
     } else if (this.children[parts[0]]) {
       this.children[parts[0]].addChild(file);
     } else {
-      const dir = new File(path.join(this.path, parts[0]), { isDir: true });
+      const dir = new File(path.join(this.path, parts[0]), true);
       dir.parent = this;
       this.children[parts[0]] = dir;
       dir.addChild(file);
@@ -392,11 +383,7 @@ function makeReadCallback(fd, predicate, callback) {
 }
 
 function isDescendant(root, child) {
-  return path.relative(root, child).indexOf('..') !== 0;
-}
-
-function escapeRegExp(str) {
-  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+  return child.startsWith(root);
 }
 
 module.exports = Fastfs;
