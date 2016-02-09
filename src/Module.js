@@ -28,7 +28,7 @@ class Module {
       throw new Error('Expected file to be absolute path but got ' + file);
     }
 
-    this.path = path.resolve(file);
+    this.path = file;
     this.type = 'Module';
 
     this._fastfs = fastfs;

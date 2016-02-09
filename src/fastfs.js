@@ -21,8 +21,6 @@ const fsClose = require('fs').close;
 const readFile = Promise.denodeify(fs.readFile);
 const stat = Promise.denodeify(fs.stat);
 
-const hasOwn = Object.prototype.hasOwnProperty;
-
 const NOT_FOUND_IN_ROOTS = 'NotFoundInRootsError';
 
 class Fastfs extends EventEmitter {
@@ -48,17 +46,13 @@ class Fastfs extends EventEmitter {
         const root = this._getRoot(filePath);
         if (root) {
           const newFile = new File(filePath, false);
-          const dirname = filePath.substr(0, filePath.lastIndexOf('/'));
+          const dirname = filePath.substr(0, filePath.lastIndexOf(path.sep));
           const parent = this._fastPaths[dirname];
+          this._fastPaths[filePath] = newFile;
           if (parent) {
-            parent.addChild(newFile);
+            parent.addChild(newFile, this._fastPaths);
           } else {
-            root.addChild(newFile);
-            for (let file = newFile; file; file = file.parent) {
-              if (!this._fastPaths[file.path]) {
-                this._fastPaths[file.path] = file;
-              }
-            }
+            root.addChild(newFile, this._fastPaths);
           }
         }
       });
@@ -70,42 +64,24 @@ class Fastfs extends EventEmitter {
   }
 
   stat(filePath) {
-    return Promise.resolve().then(() => {
-      const file = this._getFile(filePath);
-      return file.stat();
-    });
+    return Promise.resolve().then(() => this._getFile(filePath).stat());
   }
 
   getAllFiles() {
-    // one-level-deep flatten of files
-    return [].concat(...this._roots.map(root => root.getFiles()));
-  }
-
-  findFilesByExt(ext, { ignore } = {}) {
-    return this.findFilesByExts([ext], {ignore});
+    return Object.keys(this._fastPaths)
+      .filter(path => !this._fastPaths[path].isDir);
   }
 
   findFilesByExts(exts, { ignore } = {}) {
     return this.getAllFiles()
-      .filter(file => (
-        exts.indexOf(file.ext()) !== -1 && (!ignore || !ignore(file.path))
-      ))
-      .map(file => file.path);
-  }
-
-  findFilesByName(name, { ignore } = {}) {
-    return this.getAllFiles()
-      .filter(
-        file => path.basename(file.path) === name &&
-          (!ignore || !ignore(file.path))
-      )
-      .map(file => file.path);
+      .filter(filePath => (
+        exts.indexOf(path.extname(filePath).substr(1)) !== -1 &&
+        (!ignore || !ignore(filePath))
+      ));
   }
 
   matchFilesByPattern(pattern) {
-    return this.getAllFiles()
-      .filter(file => file.path.match(pattern))
-      .map(file => file.path);
+    return this.getAllFiles().filter(file => file.match(pattern));
   }
 
   readFile(filePath) {
@@ -196,21 +172,25 @@ class Fastfs extends EventEmitter {
 
   _getFile(filePath) {
     filePath = path.normalize(filePath);
-    if (!hasOwn.call(this._fastPaths, filePath)) {
-      this._fastPaths[filePath] = this._getAndAssertRoot(filePath).getFileFromPath(filePath);
+    if (!this._fastPaths[filePath]) {
+      const file = this._getAndAssertRoot(filePath).getFileFromPath(filePath);
+      if (file) {
+        this._fastPaths[filePath] = file;
+      }
     }
 
     return this._fastPaths[filePath];
   }
 
-  _processFileChange(type, filePath, root, fstat) {
-    const absPath = path.join(root, filePath);
+  _processFileChange(type, filePath, rootPath, fstat) {
+    const absPath = path.join(rootPath, filePath);
     if (this._ignore(absPath) || (fstat && fstat.isDirectory())) {
       return;
     }
 
     // Make sure this event belongs to one of our roots.
-    if (!this._getRoot(absPath)) {
+    const root = this._getRoot(absPath);
+    if (!root) {
       return;
     }
 
@@ -224,10 +204,11 @@ class Fastfs extends EventEmitter {
     delete this._fastPaths[path.normalize(absPath)];
 
     if (type !== 'delete') {
-      this._getAndAssertRoot(absPath).addChild(new File(absPath, false));
+      const file = new File(absPath, false);
+      root.addChild(file, this._fastPaths);
     }
 
-    this.emit('change', type, filePath, root, fstat);
+    this.emit('change', type, filePath, rootPath, fstat);
   }
 }
 
@@ -262,28 +243,24 @@ class File {
     return this._stat;
   }
 
-  addChild(file) {
+  addChild(file, fileMap) {
     const parts = file.path.substr(this.path.length + 1).split(path.sep);
-    if (parts.length === 0) {
-      return;
-    }
-
     if (parts.length === 1) {
       this.children[parts[0]] = file;
       file.parent = this;
     } else if (this.children[parts[0]]) {
-      this.children[parts[0]].addChild(file);
+      this.children[parts[0]].addChild(file, fileMap);
     } else {
       const dir = new File(path.join(this.path, parts[0]), true);
       dir.parent = this;
       this.children[parts[0]] = dir;
-      dir.addChild(file);
+      fileMap[dir.path] = dir;
+      dir.addChild(file, fileMap);
     }
   }
 
   getFileFromPath(filePath) {
-    const parts = path.relative(this.path, filePath)
-            .split(path.sep);
+    const parts = path.relative(this.path, filePath).split(path.sep);
 
     /*eslint consistent-this:0*/
     let file = this;
@@ -304,21 +281,8 @@ class File {
     return file;
   }
 
-  getFiles() {
-    let files = [];
-    Object.keys(this.children).forEach(key => {
-      const file = this.children[key];
-      if (file.isDir) {
-        files = files.concat(file.getFiles());
-      } else {
-        files.push(file);
-      }
-    });
-    return files;
-  }
-
   ext() {
-    return path.extname(this.path).replace(/^\./, '');
+    return path.extname(this.path).substr(1);
   }
 
   remove() {
