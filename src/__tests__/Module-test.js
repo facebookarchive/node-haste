@@ -10,6 +10,7 @@
 
 jest
   .dontMock('absolute-path')
+  .dontMock('json-stable-stringify')
   .dontMock('../fastfs')
   .dontMock('../lib/extractRequires')
   .dontMock('../lib/replacePatterns')
@@ -167,45 +168,6 @@ describe('Module', () => {
     });
   });
 
-  describe('Async Dependencies', () => {
-    function expectAsyncDependenciesToEqual(expected) {
-      const module = createModule();
-      return module.getAsyncDependencies().then(actual =>
-        expect(actual).toEqual(expected)
-      );
-    }
-
-    pit('should recognize single dependency', () => {
-      mockIndexFile('System.' + 'import("dep1")');
-
-      return expectAsyncDependenciesToEqual([['dep1']]);
-    });
-
-    pit('should parse single quoted dependencies', () => {
-      mockIndexFile('System.' + 'import(\'dep1\')');
-
-      return expectAsyncDependenciesToEqual([['dep1']]);
-    });
-
-    pit('should parse multiple async dependencies on the same module', () => {
-      mockIndexFile([
-        'System.' + 'import("dep1")',
-        'System.' + 'import("dep2")',
-      ].join('\n'));
-
-      return expectAsyncDependenciesToEqual([
-        ['dep1'],
-        ['dep2'],
-      ]);
-    });
-
-    pit('parse fine new lines', () => {
-      mockIndexFile('System.' + 'import(\n"dep1"\n)');
-
-      return expectAsyncDependenciesToEqual([['dep1']]);
-    });
-  });
-
   describe('Code', () => {
     const fileContents = 'arbitrary(code)';
     beforeEach(function() {
@@ -217,15 +179,9 @@ describe('Module', () => {
         expect(code).toBe(fileContents))
     );
 
-    pit('exposes file contes via the `getCode()` method', () =>
+    pit('exposes file contents via the `getCode()` method', () =>
       createModule().getCode().then(code =>
         expect(code).toBe(fileContents))
-    );
-
-    pit('does not save the code in the cache', () =>
-      createModule().getCode().then(() =>
-        expect(cache.get).not.toBeCalled()
-      )
     );
   });
 
@@ -260,20 +216,25 @@ describe('Module', () => {
       const module = createModule({transformCode});
       return module.read()
         .then(() => {
-          expect(transformCode).toBeCalledWith(module, fileContents);
+          expect(transformCode).toBeCalledWith(module, fileContents, undefined);
         });
+    });
+
+    pit('passes any additional options to the transform function when reading', () => {
+      const module = createModule({transformCode});
+      const transformOptions = {arbitrary: Object()};
+      return module.read(transformOptions)
+        .then(() =>
+          expect(transformCode.mock.calls[0][2]).toBe(transformOptions)
+        );
     });
 
     pit('uses the code that `transformCode` resolves to to extract dependencies', () => {
       transformCode.mockReturnValue(Promise.resolve({code: exampleCode}));
       const module = createModule({transformCode});
 
-      return Promise.all([
-        module.getDependencies(),
-        module.getAsyncDependencies(),
-      ]).then(([dependencies, asyncDependencies]) => {
+      return module.getDependencies().then(dependencies => {
         expect(dependencies).toEqual(['a', 'c']);
-        expect(asyncDependencies).toEqual([['b']]);
       });
     });
 
@@ -285,29 +246,8 @@ describe('Module', () => {
       }));
       const module = createModule({transformCode});
 
-      return Promise.all([
-        module.getDependencies(),
-        module.getAsyncDependencies(),
-      ]).then(([dependencies, asyncDependencies]) => {
+      return module.getDependencies().then(dependencies => {
         expect(dependencies).toEqual(mockedDependencies);
-        expect(asyncDependencies).toEqual([['b']]);
-      });
-    });
-
-    pit('uses async dependencies that `transformCode` resolves to, instead of extracting them', () => {
-      const mockedAsyncDependencies = [['foo', 'bar'], ['baz']];
-      transformCode.mockReturnValue(Promise.resolve({
-        code: exampleCode,
-        asyncDependencies: mockedAsyncDependencies,
-      }));
-      const module = createModule({transformCode});
-
-      return Promise.all([
-        module.getDependencies(),
-        module.getAsyncDependencies(),
-      ]).then(([dependencies, asyncDependencies]) => {
-        expect(dependencies).toEqual(['a', 'c']);
-        expect(asyncDependencies).toEqual(mockedAsyncDependencies);
       });
     });
 
@@ -319,6 +259,77 @@ describe('Module', () => {
           expect(data.code).toBe(exampleCode);
           expect(code).toBe(exampleCode);
         });
+    });
+
+    pit('exposes a source map returned by the transform', () => {
+      const map = {version: 3};
+      transformCode.mockReturnValue(Promise.resolve({map, code: exampleCode}));
+      const module = createModule({transformCode});
+      return Promise.all([module.read(), module.getMap()])
+        .then(([data, sourceMap]) => {
+          expect(data.map).toBe(map);
+          expect(sourceMap).toBe(map);
+        });
+    });
+
+    describe('Caching based on options', () => {
+      let module;
+      beforeEach(function() {
+        module = createModule({transformCode});
+      });
+
+      const callsEqual = ([path1, key1], [path2, key2]) => {
+        expect(path1).toEqual(path2);
+        expect(key1).toEqual(key2);
+      };
+
+      it('gets dependencies from the cache with the same cache key for the same transform options', () => {
+        const options = {some: 'options'};
+        module.getDependencies(options); // first call
+        module.getDependencies(options); // second call
+
+        const {calls} = cache.get.mock;
+        callsEqual(calls[0], calls[1]);
+      });
+
+      it('gets dependencies from the cache with the same cache key for the equivalent transform options', () => {
+        module.getDependencies({a: 'b', c: 'd'}); // first call
+        module.getDependencies({c: 'd', a: 'b'}); // second call
+
+        const {calls} = cache.get.mock;
+        callsEqual(calls[0], calls[1]);
+      });
+
+      it('gets dependencies from the cache with different cache keys for different transform options', () => {
+        module.getDependencies({some: 'options'});
+        module.getDependencies({other: 'arbitrary options'});
+        const {calls} = cache.get.mock;
+        expect(calls[0][1]).not.toEqual(calls[1][1]);
+      });
+
+      it('gets code from the cache with the same cache key for the same transform options', () => {
+        const options = {some: 'options'};
+        module.getCode(options); // first call
+        module.getCode(options); // second call
+
+        const {calls} = cache.get.mock;
+        callsEqual(calls[0], calls[1]);
+      });
+
+      it('gets code from the cache with the same cache key for the equivalent transform options', () => {
+        module.getCode({a: 'b', c: 'd'}); // first call
+        module.getCode({c: 'd', a: 'b'}); // second call
+
+        const {calls} = cache.get.mock;
+        callsEqual(calls[0], calls[1]);
+      });
+
+      it('gets code from the cache with different cache keys for different transform options', () => {
+        module.getCode({some: 'options'});
+        module.getCode({other: 'arbitrary options'});
+        const {calls} = cache.get.mock;
+        expect(calls[0][1]).not.toEqual(calls[1][1]);
+      });
     });
   });
 });
