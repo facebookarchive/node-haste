@@ -29,7 +29,14 @@ class Fastfs extends EventEmitter {
     this._name = name;
     this._fileWatcher = fileWatcher;
     this._ignore = ignore;
-    this._roots = roots.map(root => new File(root, true));
+    this._roots = roots.map(root => {
+      // If the path ends in a separator ("/"), remove it to make string
+      // operations on paths safer.
+      if (root.endsWith(path.sep)) {
+        root = root.substr(0, root.length - 1);
+      }
+      return new File(root, true);
+    });
     this._fastPaths = Object.create(null);
     this._crawling = crawling;
     this._activity = activity;
@@ -69,7 +76,7 @@ class Fastfs extends EventEmitter {
 
   getAllFiles() {
     return Object.keys(this._fastPaths)
-      .filter(path => !this._fastPaths[path].isDir);
+      .filter(filePath => !this._fastPaths[filePath].isDir);
   }
 
   findFilesByExts(exts, { ignore } = {}) {
@@ -251,7 +258,7 @@ class File {
     } else if (this.children[parts[0]]) {
       this.children[parts[0]].addChild(file, fileMap);
     } else {
-      const dir = new File(path.join(this.path, parts[0]), true);
+      const dir = new File(this.path + path.sep + parts[0], true);
       dir.parent = this;
       this.children[parts[0]] = dir;
       fileMap[dir.path] = dir;
