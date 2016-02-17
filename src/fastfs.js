@@ -14,10 +14,6 @@ const {EventEmitter} = require('events');
 const fs = require('graceful-fs');
 const path = require('fast-path');
 
-// workaround for https://github.com/isaacs/node-graceful-fs/issues/56
-// fs.close is patched, whereas graceful-fs.close is not.
-const fsClose = require('fs').close;
-
 const readFile = Promise.denodeify(fs.readFile);
 const stat = Promise.denodeify(fs.stat);
 
@@ -330,7 +326,7 @@ function read(fd, buffer, callback) {
 }
 
 function close(fd, error, result, complete, callback) {
-  fsClose(fd, closeError => callback(error || closeError, result, complete));
+  fs.close(fd, closeError => callback(error || closeError, result, complete));
 }
 
 function makeReadCallback(fd, predicate, callback) {

@@ -13,20 +13,18 @@ npm install --save node-haste
 ```
 
 ```js
-const Cache = require('node-haste/lib/Cache');
-const DependencyGraph = require('node-haste/');
-const FileWatcher = require('node-haste/lib/FileWatcher');
+const NodeHaste = require('node-haste');
 
-const cache = new Cache({
+const cache = new NodeHaste.Cache({
   cacheKey: '$$cacheKey$$',
 });
 
-const fileWatcher = new FileWatcher([{
+const fileWatcher = new NodeHaste.FileWatcher([{
   dir: '/path/to/node-haste/lib',
 }], {useWatchman: true});
 
-// Create an instance of the DependencyGraph
-const graph = new DependencyGraph({
+// Create an instance of the dependency graph
+const graph = new NodeHaste({
   roots: ['/path/to/node-haste/lib'],
   cache,
   fileWatcher,

@@ -10,9 +10,7 @@
 
 jest
   .dontMock('absolute-path')
-  .dontMock('../')
-  .dontMock('../lib/loadCacheSync')
-  .dontMock('../lib/getCacheFilePath');
+  .dontMock('../');
 
 jest
   .mock('fs')

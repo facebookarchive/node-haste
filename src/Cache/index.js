@@ -9,10 +9,10 @@
 'use strict';
 
 const Promise = require('promise');
+const crypto = require('crypto');
 const fs = require('graceful-fs');
-const getCacheFilePath = require('./lib/getCacheFilePath');
 const isAbsolutePath = require('absolute-path');
-const loadCacheSync = require('./lib/loadCacheSync');
+const path = require('fast-path');
 const tmpDir = require('os').tmpDir();
 
 function getObjectValues(object) {
@@ -33,7 +33,7 @@ class Cache {
     cacheKey,
     cacheDirectory = tmpDir,
   }) {
-    this._cacheFilePath = getCacheFilePath(cacheDirectory, cacheKey);
+    this._cacheFilePath = Cache.getCacheFilePath(cacheDirectory, cacheKey);
     if (!resetCache) {
       this._data = this._loadCacheSync(this._cacheFilePath);
     } else {
@@ -44,6 +44,12 @@ class Cache {
       this._persistCache.bind(this),
       2000,
     );
+  }
+
+  static getCacheFilePath(tmpdir, ...args) {
+    const hash = crypto.createHash('md5');
+    args.forEach(arg => hash.update(arg));
+    return path.join(tmpdir, hash.digest('hex'));
   }
 
   get(filepath, field, loaderCb) {
@@ -184,6 +190,27 @@ class Cache {
     });
 
     return ret;
+  }
+}
+
+function loadCacheSync(cachePath) {
+  if (!fs.existsSync(cachePath)) {
+    return Object.create(null);
+  }
+
+  try {
+    return JSON.parse(fs.readFileSync(cachePath));
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      console.warn('Unable to parse cache file. Will clear and continue.');
+      try {
+        fs.unlinkSync(cachePath);
+      } catch (err) {
+        // Someone else might've deleted it.
+      }
+      return Object.create(null);
+    }
+    throw e;
   }
 }
 
