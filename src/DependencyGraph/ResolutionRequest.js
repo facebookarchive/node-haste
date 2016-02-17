@@ -104,7 +104,12 @@ class ResolutionRequest {
       );
   }
 
-  getOrderedDependencies(response, mocksPattern, recursive = true) {
+  getOrderedDependencies(
+    response,
+    mocksPattern,
+    transformOptions,
+    recursive = true,
+  ) {
     return this._getAllMocks(mocksPattern).then(allMocks => {
       const entry = this._moduleCache.getModule(this._entryPath);
       const mocks = Object.create(null);
@@ -113,7 +118,7 @@ class ResolutionRequest {
 
       response.pushDependency(entry);
       const collect = (mod) => {
-        return mod.getDependencies().then(
+        return mod.getDependencies(transformOptions).then(
           depNames => Promise.all(
             depNames.map(name => this.resolveDependency(mod, name))
           ).then((dependencies) => [depNames, dependencies])
@@ -137,9 +142,8 @@ class ResolutionRequest {
               return [depNames, dependencies];
             });
           }
-          return Promise.resolve([depNames, dependencies]);
+          return [depNames, dependencies];
         }).then(([depNames, dependencies]) => {
-          let p = Promise.resolve();
           const filteredPairs = [];
 
           dependencies.forEach((modDep, i) => {
@@ -167,24 +171,21 @@ class ResolutionRequest {
 
           response.setResolvedDependencyPairs(mod, filteredPairs);
 
-          filteredPairs.forEach(([depName, modDep]) => {
-            p = p.then(() => {
-              if (!visited[modDep.hash()]) {
+          return Promise.all(
+            filteredPairs
+              .filter(([, modDep]) => !visited[modDep.hash()])
+              .map(([depName, modDep]) => {
                 visited[modDep.hash()] = true;
-                response.pushDependency(modDep);
-                if (recursive) {
-                  return collect(modDep);
-                }
-              }
-              return null;
-            });
-          });
-
-          return p;
+                return Promise.all([modDep, recursive ? collect(modDep) : []]);
+              })
+          );
         });
       };
 
-      return collect(entry).then(() => response.setMocks(mocks));
+      return collect(entry).then(deps => {
+        recursiveFlatten(deps).forEach(dep => response.pushDependency(dep));
+        response.setMocks(mocks);
+      });
     });
   }
 
@@ -441,6 +442,13 @@ function normalizePath(modulePath) {
   }
 
   return modulePath.replace(/\/$/, '');
+}
+
+function recursiveFlatten(array) {
+  return Array.prototype.concat.apply(
+    Array.prototype,
+    array.map(item => Array.isArray(item) ? recursiveFlatten(item) : item)
+  );
 }
 
 module.exports = ResolutionRequest;

@@ -21,8 +21,8 @@ const mocksPattern = /(?:[\\/]|^)__mocks__[\\/]([^\/]+)\.js$/;
 describe('DependencyGraph', function() {
   let defaults;
 
-  function getOrderedDependenciesAsJSON(dgraph, entry, platform, recursive = true) {
-    return dgraph.getDependencies(entry, platform, recursive)
+  function getOrderedDependenciesAsJSON(dgraph, entryPath, platform, recursive = true) {
+    return dgraph.getDependencies({entryPath, platform, recursive})
       .then(response => response.finalize())
       .then(({ dependencies }) => Promise.all(dependencies.map(dep => Promise.all([
         dep.getName(),
@@ -4110,7 +4110,7 @@ describe('DependencyGraph', function() {
         roots: [root],
       });
 
-      return dgraph.getDependencies('/root/index.js')
+      return dgraph.getDependencies({entryPath: '/root/index.js'})
         .then(response => response.finalize())
         .then(response => {
           expect(response.mocks).toEqual({});
@@ -4140,7 +4140,7 @@ describe('DependencyGraph', function() {
         mocksPattern,
       });
 
-      return dgraph.getDependencies('/root/b.js')
+      return dgraph.getDependencies({entryPath: '/root/b.js'})
         .then(response => response.finalize())
         .then(response => {
           expect(response.mocks).toEqual({
