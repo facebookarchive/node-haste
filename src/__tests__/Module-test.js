@@ -27,8 +27,23 @@ const DependencyGraphHelpers = require('../DependencyGraph/DependencyGraphHelper
 const Promise = require('promise');
 const fs = require('graceful-fs');
 
+const packageJson =
+  JSON.stringify({
+    name: 'arbitrary',
+    version: '1.0.0',
+    description: "A require('foo') story",
+  });
+
+function mockFS(rootChildren) {
+  fs.__setMockFilesystem({root: rootChildren});
+}
+
+function mockPackageFile() {
+  mockFS({'package.json': packageJson});
+}
+
 function mockIndexFile(indexJs) {
-  fs.__setMockFilesystem({'root': {'index.js': indexJs}});
+  mockFS({'index.js': indexJs});
 }
 
 describe('Module', () => {
@@ -50,13 +65,16 @@ describe('Module', () => {
 
   const createModule = (options) =>
     new Module({
+      ...options,
       cache,
       fastfs,
-      file: fileName,
+      file: options && options.file || fileName,
       depGraphHelpers: new DependencyGraphHelpers(),
       moduleCache: new ModuleCache({fastfs, cache}),
-      ...options,
     });
+
+  const createJSONModule =
+    (options) => createModule({...options, file: '/root/package.json'});
 
   beforeEach(function(done) {
     cache = createCache();
@@ -64,7 +82,7 @@ describe('Module', () => {
       'test',
       ['/root'],
       fileWatcher,
-      {crawling: Promise.resolve([fileName]), ignore: []},
+      {crawling: Promise.resolve([fileName, '/root/package.json']), ignore: []},
     );
 
     fastfs.build().then(done);
@@ -196,6 +214,44 @@ describe('Module', () => {
       return module.getDependencies().then(actual =>
         expect(actual).toEqual(['foo', 'bar']));
     });
+
+    pit('uses a default extractor to extract dependencies', () => {
+      mockIndexFile(`
+        require('dependency-a');
+        import * as b from "dependency-b";
+        export {something} from 'dependency-c';
+      `);
+
+      const module = createModule();
+      return module.getDependencies().then(dependencies =>
+        expect(dependencies.sort())
+          .toEqual(['dependency-a', 'dependency-b', 'dependency-c'])
+      );
+    });
+
+    pit('does not extract dependencies from files annotated with @extern', () => {
+      mockIndexFile(`
+        /**
+         * @extern
+         */
+        require('dependency-a');
+        import * as b from "dependency-b";
+        export {something} from 'dependency-c';
+      `);
+
+      const module = createModule();
+      return module.getDependencies().then(dependencies =>
+        expect(dependencies).toEqual([])
+      );
+    });
+
+    pit('does not extract dependencies from JSON files', () => {
+      mockPackageFile();
+      const module = createJSONModule();
+      return module.getDependencies().then(dependencies =>
+        expect(dependencies).toEqual([])
+      );
+    });
   });
 
   describe('Custom Code Transform', () => {
@@ -227,6 +283,54 @@ describe('Module', () => {
         .then(() =>
           expect(transformCode.mock.calls[0][2]).toBe(transformOptions)
         );
+    });
+
+    pit('passes the module and file contents to the transform if the file is annotated with @extern', () => {
+      const module = createModule({transformCode});
+      const fileContents = `
+        /**
+         * @extern
+         */
+      `;
+      mockIndexFile(fileContents);
+      return module.read().then(() => {
+        expect(transformCode).toBeCalledWith(module, fileContents, {extern: true});
+      });
+    });
+
+    pit('passes the module and file contents to the transform for JSON files', () => {
+      mockPackageFile();
+      const module = createJSONModule({transformCode});
+      return module.read().then(() => {
+        expect(transformCode).toBeCalledWith(module, packageJson, {extern: true});
+      });
+    });
+
+    pit('does not extend the passed options object if the file is annotated with @extern', () => {
+      const module = createModule({transformCode});
+      const fileContents = `
+        /**
+         * @extern
+         */
+      `;
+      mockIndexFile(fileContents);
+      const options = {arbitrary: 'foo'};
+      return module.read(options).then(() => {
+        expect(options).not.toEqual(jasmine.objectContaining({extern: true}));
+        expect(transformCode)
+          .toBeCalledWith(module, fileContents, {...options, extern: true});
+      });
+    });
+
+    pit('does not extend the passed options object for JSON files', () => {
+      mockPackageFile();
+      const module = createJSONModule({transformCode});
+      const options = {arbitrary: 'foo'};
+      return module.read(options).then(() => {
+        expect(options).not.toEqual(jasmine.objectContaining({extern: true}));
+        expect(transformCode)
+          .toBeCalledWith(module, packageJson, {...options, extern: true});
+      });
     });
 
     pit('uses the code that `transformCode` resolves to to extract dependencies', () => {
