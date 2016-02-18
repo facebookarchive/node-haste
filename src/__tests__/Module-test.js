@@ -251,6 +251,22 @@ describe('Module', () => {
       });
     });
 
+    pit('forwards all additional properties of the result provided by `transformCode`', () => {
+      const mockedResult = {
+        code: exampleCode,
+        arbitrary: 'arbitrary',
+        dependencyOffsets: [12, 764],
+        map: {version: 3},
+        subObject: {foo: 'bar'},
+      };
+      transformCode.mockReturnValue(Promise.resolve(mockedResult));
+      const module = createModule({transformCode});
+
+      return module.read().then((result) => {
+        expect(result).toEqual(jasmine.objectContaining(mockedResult));
+      });
+    });
+
     pit('exposes the transformed code rather than the raw file contents', () => {
       transformCode.mockReturnValue(Promise.resolve({code: exampleCode}));
       const module = createModule({transformCode});
@@ -259,6 +275,12 @@ describe('Module', () => {
           expect(data.code).toBe(exampleCode);
           expect(code).toBe(exampleCode);
         });
+    });
+
+    pit('exposes the raw file contents as `source` property', () => {
+      const module = createModule({transformCode});
+      return module.read()
+        .then(data => expect(data.source).toBe(fileContents));
     });
 
     pit('exposes a source map returned by the transform', () => {

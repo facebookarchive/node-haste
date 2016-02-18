@@ -15,6 +15,13 @@ const realPath = require('path');
 const isAbsolutePath = require('absolute-path');
 const getAssetDataFromName = require('../lib/getAssetDataFromName');
 const Promise = require('promise');
+const throat = require('throat')(Promise);
+
+const MAX_CONCURRENT_FILE_READS = 32;
+const getDependencies = throat(
+  MAX_CONCURRENT_FILE_READS,
+  (module, transformOptions) => module.getDependencies(transformOptions)
+);
 
 class ResolutionRequest {
   constructor({
@@ -104,7 +111,13 @@ class ResolutionRequest {
       );
   }
 
-  getOrderedDependencies(response, mocksPattern, recursive = true) {
+  getOrderedDependencies({
+    response,
+    mocksPattern,
+    transformOptions,
+    onProgress,
+    recursive = true,
+  }) {
     return this._getAllMocks(mocksPattern).then(allMocks => {
       const entry = this._moduleCache.getModule(this._entryPath);
       const mocks = Object.create(null);
@@ -112,8 +125,11 @@ class ResolutionRequest {
       visited[entry.hash()] = true;
 
       response.pushDependency(entry);
+      let totalModules = 1;
+      let finishedModules = 0;
+
       const collect = (mod) => {
-        return mod.getDependencies().then(
+        return getDependencies(mod, transformOptions).then(
           depNames => Promise.all(
             depNames.map(name => this.resolveDependency(mod, name))
           ).then((dependencies) => [depNames, dependencies])
@@ -137,9 +153,8 @@ class ResolutionRequest {
               return [depNames, dependencies];
             });
           }
-          return Promise.resolve([depNames, dependencies]);
+          return [depNames, dependencies];
         }).then(([depNames, dependencies]) => {
-          let p = Promise.resolve();
           const filteredPairs = [];
 
           dependencies.forEach((modDep, i) => {
@@ -167,24 +182,27 @@ class ResolutionRequest {
 
           response.setResolvedDependencyPairs(mod, filteredPairs);
 
-          filteredPairs.forEach(([depName, modDep]) => {
-            p = p.then(() => {
-              if (!visited[modDep.hash()]) {
-                visited[modDep.hash()] = true;
-                response.pushDependency(modDep);
-                if (recursive) {
-                  return collect(modDep);
-                }
-              }
-              return null;
-            });
-          });
+          const newDependencies =
+            filteredPairs.filter(([, modDep]) => !visited[modDep.hash()]);
 
-          return p;
+          if (onProgress) {
+            finishedModules += 1;
+            totalModules += newDependencies.length;
+            onProgress(finishedModules, totalModules);
+          }
+          return Promise.all(
+            newDependencies.map(([depName, modDep]) => {
+              visited[modDep.hash()] = true;
+              return Promise.all([modDep, recursive ? collect(modDep) : []]);
+            })
+          );
         });
       };
 
-      return collect(entry).then(() => response.setMocks(mocks));
+      return collect(entry).then(deps => {
+        recursiveFlatten(deps).forEach(dep => response.pushDependency(dep));
+        response.setMocks(mocks);
+      });
     });
   }
 
@@ -441,6 +459,13 @@ function normalizePath(modulePath) {
   }
 
   return modulePath.replace(/\/$/, '');
+}
+
+function recursiveFlatten(array) {
+  return Array.prototype.concat.apply(
+    Array.prototype,
+    array.map(item => Array.isArray(item) ? recursiveFlatten(item) : item)
+  );
 }
 
 module.exports = ResolutionRequest;

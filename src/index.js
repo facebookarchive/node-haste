@@ -165,8 +165,10 @@ class DependencyGraph {
    * Returns a promise with the direct dependencies the module associated to
    * the given entryPath has.
    */
-  getShallowDependencies(entryPath) {
-    return this._moduleCache.getModule(entryPath).getDependencies();
+  getShallowDependencies(entryPath, transformOptions) {
+    return this._moduleCache
+      .getModule(entryPath)
+      .getDependencies(transformOptions);
   }
 
   getFS() {
@@ -184,7 +186,13 @@ class DependencyGraph {
     return this.load().then(() => this._moduleCache.getAllModules());
   }
 
-  getDependencies(entryPath, platform, recursive = true) {
+  getDependencies({
+    entryPath,
+    platform,
+    transformOptions,
+    onProgress,
+    recursive = true,
+  }) {
     return this.load().then(() => {
       platform = this._getRequestPlatform(entryPath, platform);
       const absPath = this._getAbsolutePath(entryPath);
@@ -202,11 +210,13 @@ class DependencyGraph {
 
       const response = new ResolutionResponse();
 
-      return req.getOrderedDependencies(
+      return req.getOrderedDependencies({
         response,
-        this._opts.mocksPattern,
+        mocksPattern: this._opts.mocksPattern,
+        transformOptions,
+        onProgress,
         recursive,
-      ).then(() => response);
+      }).then(() => response);
     });
   }
 
@@ -279,6 +289,9 @@ class DependencyGraph {
     });
   }
 
+  createPolyfill(options) {
+    return this._moduleCache.createPolyfill(options);
+  }
 }
 
 Object.assign(DependencyGraph, {

@@ -3,6 +3,7 @@
 const AssetModule = require('./AssetModule');
 const Package = require('./Package');
 const Module = require('./Module');
+const Polyfill = require('./Polyfill');
 const path = require('fast-path');
 
 class ModuleCache {
@@ -85,6 +86,17 @@ class ModuleCache {
 
     module.__package = packagePath;
     return this.getPackage(packagePath);
+  }
+
+  createPolyfill({file}) {
+    return new Polyfill({
+      file,
+      cache: this._cache,
+      depGraphHelpers: this._depGraphHelpers,
+      fastfs: this._fastfs,
+      moduleCache: this,
+      transformCode: this._transformCode,
+    });
   }
 
   _processFileChange(type, filePath, root) {
