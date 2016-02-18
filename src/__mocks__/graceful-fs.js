@@ -112,6 +112,43 @@ fs.stat.mockImpl(function(filepath, callback) {
   }
 });
 
+fs.statSync.mockImpl(function(filepath) {
+  var node;
+  node = getToNode(filepath);
+
+  var mtime = {
+    getTime: function() {
+      return Math.ceil(Math.random() * 10000000);
+    },
+  };
+
+  if (node.SYMLINK) {
+    return fs.statSync(node.SYMLINK);
+  }
+
+  if (node && typeof node === 'object') {
+    return {
+      isDirectory: function() {
+        return true;
+      },
+      isSymbolicLink: function() {
+        return false;
+      },
+      mtime: mtime,
+    };
+  } else {
+    return {
+      isDirectory: function() {
+        return false;
+      },
+      isSymbolicLink: function() {
+        return false;
+      },
+      mtime: mtime,
+    };
+  }
+});
+
 const noop = () => {};
 fs.open.mockImpl(function(path) {
   const callback = arguments[arguments.length - 1] || noop;
