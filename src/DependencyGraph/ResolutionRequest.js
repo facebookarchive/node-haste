@@ -111,12 +111,13 @@ class ResolutionRequest {
       );
   }
 
-  getOrderedDependencies(
+  getOrderedDependencies({
     response,
     mocksPattern,
     transformOptions,
+    onProgress,
     recursive = true,
-  ) {
+  }) {
     return this._getAllMocks(mocksPattern).then(allMocks => {
       const entry = this._moduleCache.getModule(this._entryPath);
       const mocks = Object.create(null);
@@ -124,6 +125,9 @@ class ResolutionRequest {
       visited[entry.hash()] = true;
 
       response.pushDependency(entry);
+      let totalModules = 1;
+      let finishedModules = 0;
+
       const collect = (mod) => {
         return getDependencies(mod, transformOptions).then(
           depNames => Promise.all(
@@ -178,13 +182,19 @@ class ResolutionRequest {
 
           response.setResolvedDependencyPairs(mod, filteredPairs);
 
+          const newDependencies =
+            filteredPairs.filter(([, modDep]) => !visited[modDep.hash()]);
+
+          if (onProgress) {
+            finishedModules += 1;
+            totalModules += newDependencies.length;
+            onProgress(finishedModules, totalModules);
+          }
           return Promise.all(
-            filteredPairs
-              .filter(([, modDep]) => !visited[modDep.hash()])
-              .map(([depName, modDep]) => {
-                visited[modDep.hash()] = true;
-                return Promise.all([modDep, recursive ? collect(modDep) : []]);
-              })
+            newDependencies.map(([depName, modDep]) => {
+              visited[modDep.hash()] = true;
+              return Promise.all([modDep, recursive ? collect(modDep) : []]);
+            })
           );
         });
       };

@@ -4282,4 +4282,63 @@ describe('DependencyGraph', function() {
         });
     });
   });
+
+  describe('Progress updates', () => {
+    let dependencyGraph, onProgress;
+
+    function makeModule(id, dependencies = []) {
+      return `
+        /**
+         * @providesModule ${id}
+         */\n` +
+      dependencies.map(d => `require(${JSON.stringify(d)});`).join('\n');
+    }
+
+    function getDependencies() {
+      return dependencyGraph.getDependencies({
+        entryPath: '/root/index.js',
+        onProgress,
+      });
+    }
+
+    beforeEach(function() {
+      onProgress = jest.genMockFn();
+      fs.__setMockFilesystem({
+        'root': {
+          'index.js': makeModule('index', ['a', 'b']),
+          'a.js': makeModule('a', ['c', 'd']),
+          'b.js': makeModule('b', ['d', 'e']),
+          'c.js': makeModule('c'),
+          'd.js': makeModule('d', ['f']),
+          'e.js': makeModule('e', ['f']),
+          'f.js': makeModule('f', ['g']),
+          'g.js': makeModule('g'),
+        },
+      });
+      dependencyGraph = new DependencyGraph({
+        ...defaults,
+        roots: ['/root'],
+      });
+    });
+
+    pit('calls back for each finished module', () => {
+      return getDependencies().then(() =>
+        expect(onProgress.mock.calls.length).toBe(8)
+      );
+    });
+
+    pit('increases the number of finished modules in steps of one', () => {
+      return getDependencies().then(() => {
+        const increments = onProgress.mock.calls.map(([finished]) => finished);
+        expect(increments).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+      });
+    });
+
+    pit('adss the number of discovered modules to the number of total modules', () => {
+      return getDependencies().then(() => {
+        const increments = onProgress.mock.calls.map(([, total]) => total);
+        expect(increments).toEqual([3, 5, 6, 6, 7, 7, 8, 8]);
+      });
+    });
+  });
 });
