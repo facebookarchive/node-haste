@@ -3,6 +3,8 @@
 const Promise = require('promise');
 const path = require('fast-path');
 
+const watchmanURL = 'https://facebook.github.io/watchman/docs/troubleshooting.html';
+
 function watchmanRecReadDir(roots, {ignore, fileWatcher, exts}) {
   const files = [];
   return Promise.all(
@@ -56,7 +58,15 @@ function watchmanRecReadDir(roots, {ignore, fileWatcher, exts}) {
           });
         })
       );
-    }).then(() => files);
+    }).then(
+      () => files,
+      error => {
+        throw new Error(
+          `Watchman error: ${error.message.trim()}. Make sure watchman ` +
+          `is running for this project. See ${watchmanURL}.`
+        );
+      }
+    );
 }
 
 function isDescendant(root, child) {

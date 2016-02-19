@@ -13,24 +13,19 @@ jest
   .dontMock('events')
   .dontMock('../')
   .setMock('child_process', {
-    exec: (cmd, cb) => cb(null, '/usr/bin/watchman'),
+    execSync: () => '/usr/bin/watchman',
   });
 
 const sane = require('sane');
 
 describe('FileWatcher', () => {
   let WatchmanWatcher;
-  let NodeWatcher;
   let FileWatcher;
   let config;
 
   beforeEach(() => {
     WatchmanWatcher = sane.WatchmanWatcher;
     WatchmanWatcher.prototype.once.mockImplementation(
-      (type, callback) => callback()
-    );
-    NodeWatcher = sane.NodeWatcher;
-    NodeWatcher.prototype.once.mockImplementation(
       (type, callback) => callback()
     );
 
@@ -46,19 +41,10 @@ describe('FileWatcher', () => {
   });
 
   pit('gets the watcher instance when ready', () => {
-    const fileWatcher = new FileWatcher(config, {useWatchman: true});
+    const fileWatcher = new FileWatcher(config);
     return fileWatcher.getWatchers().then(watchers => {
       watchers.forEach(watcher => {
         expect(watcher instanceof WatchmanWatcher).toBe(true);
-      });
-    });
-  });
-
-  pit('gets the node watcher if watchman is disabled', () => {
-    const fileWatcher = new FileWatcher(config, {useWatchman: false});
-    return fileWatcher.getWatchers().then(watchers => {
-      watchers.forEach(watcher => {
-        expect(watcher instanceof NodeWatcher).toBe(true);
       });
     });
   });
@@ -68,7 +54,7 @@ describe('FileWatcher', () => {
     WatchmanWatcher.prototype.on.mockImplementation((type, callback) => {
       cb = callback;
     });
-    const fileWatcher = new FileWatcher(config, {useWatchman: true});
+    const fileWatcher = new FileWatcher(config);
     const handler = jest.genMockFn();
     fileWatcher.on('all', handler);
     return fileWatcher.getWatchers().then(watchers => {
@@ -79,7 +65,7 @@ describe('FileWatcher', () => {
   });
 
   pit('ends the watcher', () => {
-    const fileWatcher = new FileWatcher(config, {useWatchman: true});
+    const fileWatcher = new FileWatcher(config);
     WatchmanWatcher.prototype.close.mockImplementation(callback => callback());
 
     return fileWatcher.end().then(() => {
