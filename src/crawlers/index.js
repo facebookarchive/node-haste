@@ -3,8 +3,11 @@
 const nodeCrawl = require('./node');
 const watchmanCrawl = require('./watchman');
 
-function crawl(roots, options) {
-  const {fileWatcher} = options;
+function checkWatchman(fileWatcher) {
+  if (!fileWatcher) {
+    return Promise.resolve(false);
+  }
+
   return fileWatcher.isWatchman().then(isWatchman => {
     if (!isWatchman) {
       return false;
@@ -14,13 +17,13 @@ function crawl(roots, options) {
     // that's using `watch-project`
     // TODO(amasad): properly expose (and document) used sane internals.
     return fileWatcher.getWatchers().then(([watcher]) => !!watcher.watchProjectInfo.root);
-  }).then(isWatchman => {
-    if (isWatchman) {
-      return watchmanCrawl(roots, options);
-    }
-
-    return nodeCrawl(roots, options);
   });
+}
+
+function crawl(roots, options) {
+  return checkWatchman(options.fileWatcher).then(
+    isWatchman => isWatchman ? watchmanCrawl(roots, options) : nodeCrawl(roots, options)
+  );
 }
 
 module.exports = crawl;
