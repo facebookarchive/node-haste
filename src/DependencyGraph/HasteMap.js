@@ -13,6 +13,7 @@ const Promise = require('promise');
 
 const GENERIC_PLATFORM = 'generic';
 const NATIVE_PLATFORM = 'native';
+const PACKAGE_JSON = path.sep + 'package.json';
 
 class HasteMap {
   constructor({
@@ -37,7 +38,7 @@ class HasteMap {
         if (this._extensions.indexOf(path.extname(filePath).substr(1)) !== -1) {
           promises.push(this._processHasteModule(filePath));
         }
-        if (filePath.endsWith('/package.json')) {
+        if (filePath.endsWith(PACKAGE_JSON)) {
           promises.push(this._processHastePackage(filePath));
         }
       }
