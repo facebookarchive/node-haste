@@ -1225,7 +1225,13 @@ describe('DependencyGraph', function() {
       });
 
       return dgraph.load().catch(err => {
-        expect(err.message).toEqual('Failed to build DependencyGraph: Naming collision detected: /root/b.js collides with /root/index.js');
+        expect(err.message).toEqual(
+          `Failed to build DependencyGraph: @providesModule naming collision:\n` +
+          `  Duplicate module name: index\n` +
+          `  Paths: /root/b.js collides with /root/index.js\n\n` +
+          `This error is caused by a @providesModule declaration ` +
+          `with the same name accross two different files.`
+        );
         expect(err.type).toEqual('DependencyGraphError');
       });
     });
