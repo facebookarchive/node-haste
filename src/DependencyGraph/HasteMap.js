@@ -130,8 +130,11 @@ class HasteMap {
 
     if (existingModule && existingModule.path !== mod.path) {
       throw new Error(
-        `Naming collision detected: ${mod.path} ` +
-        `collides with ${existingModule.path}`
+        `@providesModule Naming collision detected.\n` +
+        `  name: ${name}\n` +
+        `  path: ${mod.path} collides with ${existingModule.path}\n\n` +
+        `This error is caused by having a @providesModule declaration` +
+        `with the same name accross different files.`
       );
     }
 
