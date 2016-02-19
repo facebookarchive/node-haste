@@ -11,33 +11,33 @@
 const EventEmitter  = require('events').EventEmitter;
 const sane = require('sane');
 const Promise = require('promise');
-const exec = require('child_process').exec;
+const execSync = require('child_process').execSync;
 
 const MAX_WAIT_TIME = 120000;
 
-// TODO(amasad): can we use watchman version command instead?
-const detectingWatcherClass = new Promise(function(resolve) {
-  exec('which watchman', function(err, out) {
-    if (err || out.length === 0) {
-      resolve(sane.NodeWatcher);
-    } else {
-      resolve(sane.WatchmanWatcher);
+const detectWatcherClass = () => {
+  try {
+    const out = execSync('which watchman');
+    if (out.length !== 0) {
+      return sane.WatchmanWatcher;
     }
-  });
-});
+  } catch (e) {}
+  return sane.NodeWatcher;
+};
+
+const WatcherClass = detectWatcherClass();
 
 let inited = false;
 
 class FileWatcher extends EventEmitter {
 
-  constructor(rootConfigs, options) {
+  constructor(rootConfigs) {
     if (inited) {
       throw new Error('FileWatcher can only be instantiated once');
     }
     inited = true;
 
     super();
-    this._useWatchman = options.useWatchman;
     this._watcherByRoot = Object.create(null);
 
     this._loading = Promise.all(
@@ -66,9 +66,7 @@ class FileWatcher extends EventEmitter {
   }
 
   isWatchman() {
-    return this._useWatchman ? detectingWatcherClass.then(
-      Watcher => Watcher === sane.WatchmanWatcher
-    ) : Promise.resolve(false);
+    return Promise.resolve(FileWatcher.canUseWatchman());
   }
 
   end() {
@@ -81,25 +79,20 @@ class FileWatcher extends EventEmitter {
   }
 
   _createWatcher(rootConfig) {
-    return detectingWatcherClass.then(Watcher => {
-      if (!this._useWatchman) {
-        Watcher = sane.NodeWatcher;
-      }
-      const watcher = new Watcher(rootConfig.dir, {
-        glob: rootConfig.globs,
-        dot: false,
-      });
+    const watcher = new WatcherClass(rootConfig.dir, {
+      glob: rootConfig.globs,
+      dot: false,
+    });
 
-      return new Promise((resolve, reject) => {
-        const rejectTimeout = setTimeout(
-          () => reject(new Error(timeoutMessage(Watcher))),
-          MAX_WAIT_TIME
-        );
+    return new Promise((resolve, reject) => {
+      const rejectTimeout = setTimeout(
+        () => reject(new Error(timeoutMessage(WatcherClass))),
+        MAX_WAIT_TIME
+      );
 
-        watcher.once('ready', () => {
-          clearTimeout(rejectTimeout);
-          resolve(watcher);
-        });
+      watcher.once('ready', () => {
+        clearTimeout(rejectTimeout);
+        resolve(watcher);
       });
     });
   }
@@ -109,6 +102,10 @@ class FileWatcher extends EventEmitter {
       isWatchman: () => Promise.resolve(false),
       end: () => Promise.resolve(),
     });
+  }
+
+  static canUseWatchman() {
+    return WatcherClass == sane.WatchmanWatcher;
   }
 }
 
