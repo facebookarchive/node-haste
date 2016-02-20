@@ -10,7 +10,6 @@
   "dependencies": {
     "absolute-path": "^0.0.0",
     "debug": "^2.2.0",
-    "fast-path": "^1.1.0",
     "graceful-fs": "^4.1.3",
     "json-stable-stringify": "^1.0.1",
     "promise": "^7.1.1",
@@ -33,8 +32,8 @@
     "scriptPreprocessor": "<rootDir>/../jest/transform",
     "testRunner": "<rootDir>/../node_modules/jest-cli/src/testRunners/jasmine/jasmine2.js",
     "unmockedModulePathPatterns": [
-      "fast-path",
-      "promise"
+      "fastpath",
+      "promiseify"
     ]
   },
   "scripts": {

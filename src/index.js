@@ -21,7 +21,7 @@ const getAssetDataFromName = require('./lib/getAssetDataFromName');
 const getPlatformExtension = require('./lib/getPlatformExtension');
 const isAbsolutePath = require('absolute-path');
 const replacePatterns = require('./lib/replacePatterns');
-const path = require('fast-path');
+const path = require('./fastpath');
 const util = require('util');
 const DependencyGraphHelpers = require('./DependencyGraph/DependencyGraphHelpers');
 const ResolutionRequest = require('./DependencyGraph/ResolutionRequest');
@@ -195,7 +195,8 @@ class DependencyGraph {
   }) {
     return this.load().then(() => {
       platform = this._getRequestPlatform(entryPath, platform);
-      const absPath = this._getAbsolutePath(entryPath);
+
+      const absPath = path.resolve(entryPath);
       const req = new ResolutionRequest({
         platform,
         preferNativePlatform: this._opts.preferNativePlatform,

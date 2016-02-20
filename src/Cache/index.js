@@ -12,7 +12,7 @@ const Promise = require('promise');
 const crypto = require('crypto');
 const fs = require('graceful-fs');
 const isAbsolutePath = require('absolute-path');
-const path = require('fast-path');
+const path = require('../fastpath');
 const tmpDir = require('os').tmpDir();
 
 function getObjectValues(object) {

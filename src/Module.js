@@ -12,7 +12,7 @@ const crypto = require('crypto');
 const docblock = require('./DependencyGraph/docblock');
 const isAbsolutePath = require('absolute-path');
 const jsonStableStringify = require('json-stable-stringify');
-const path = require('fast-path');
+const path = require('./fastpath');
 const extractRequires = require('./lib/extractRequires');
 
 class Module {

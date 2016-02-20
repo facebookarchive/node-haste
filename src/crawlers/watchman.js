@@ -1,7 +1,7 @@
 'use strict';
 
-const Promise = require('promise');
-const path = require('fast-path');
+const promiseify = require('../promiseify');
+const path = require('../fastpath');
 
 const watchmanURL = 'https://facebook.github.io/watchman/docs/troubleshooting.html';
 

@@ -3,7 +3,7 @@
 const Promise = require('promise');
 const debug = require('debug')('ReactNativePackager:DependencyGraph');
 const fs = require('graceful-fs');
-const path = require('fast-path');
+const path = require('../fastpath');
 
 const readDir = Promise.denodeify(fs.readdir);
 const stat = Promise.denodeify(fs.stat);
@@ -42,7 +42,7 @@ function nodeRecReadDir(roots, {ignore, exts}) {
           }
 
           if (filePath.match(extPattern)) {
-            retFiles.push(filePath);
+            retFiles.push(path.resolve(filePath));
           }
         });
 
