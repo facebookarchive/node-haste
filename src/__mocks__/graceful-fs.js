@@ -170,7 +170,12 @@ fs.__setMockFilesystem = function(object) {
 };
 
 function getToNode(filepath) {
-  var parts = filepath.split('/');
+  // Ignore the drive for Windows paths.
+  if (filepath.match(/^[a-zA-Z]:\\/)) {
+    filepath = filepath.substring(2);
+  }
+
+  var parts = filepath.split(/[\/\\]/);
   if (parts[0] !== '') {
     throw new Error('Make sure all paths are absolute.');
   }

@@ -2119,6 +2119,86 @@ describe('DependencyGraph', function() {
     });
   });
 
+  describe('get sync dependencies on Windows', function() {
+    const realPlatform = process.platform;
+    beforeEach(function() {
+      process.platform = 'win32';
+    });
+
+    afterEach(function() {
+      process.platform = realPlatform;
+    });
+
+    pit('should get dependencies', function() {
+      process.platform = 'win32';
+      const root = 'C:\\root';
+      fs.__setMockFilesystem({
+        'root': {
+          'index.js': [
+            '/**',
+            ' * @providesModule index',
+            ' */',
+            'require("a")',
+          ].join('\n'),
+          'a.js': [
+            '/**',
+            ' * @providesModule a',
+            ' */',
+            'require("b")',
+          ].join('\n'),
+          'b.js': [
+            '/**',
+            ' * @providesModule b',
+            ' */',
+          ].join('\n'),
+        },
+      });
+
+      var dgraph = new DependencyGraph({
+        ...defaults,
+        roots: [root],
+      });
+      return getOrderedDependenciesAsJSON(dgraph, 'C:\\root\\index.js').then((deps) => {
+        expect(deps)
+          .toEqual([
+            {
+              id: 'index',
+              path: 'C:\\root\\index.js',
+              dependencies: ['a'],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
+              resolveDependency: undefined,
+            },
+            {
+              id: 'a',
+              path: 'C:\\root\\a.js',
+              dependencies: ['b'],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
+              resolveDependency: undefined,
+            },
+            {
+              id: 'b',
+              path: 'C:\\root\\b.js',
+              dependencies: [],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
+              resolveDependency: undefined,
+            },
+          ]);
+      });
+    });
+  });
+
   describe('node_modules', function() {
     pit('should work with nested node_modules', function() {
       var root = '/root';
