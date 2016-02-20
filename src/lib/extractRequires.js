@@ -16,8 +16,16 @@ const replacePatterns = require('./replacePatterns');
 const blockCommentRe = /\/\*(.|\n)*?\*\//g;
 const lineCommentRe = /\/\/.+(\n|$)/g;
 function extractRequires(code) {
+  const cache = Object.create(null);
   var deps = {
     sync: [],
+  };
+
+  const addDependency = (dep) => {
+    if (!cache[dep]) {
+      cache[dep] = true;
+      deps.sync.push(dep);
+    }
   };
 
   code = code
@@ -29,15 +37,15 @@ function extractRequires(code) {
     // `import` or `export` syntaxes:
     //   var dep1 = require('dep1');
     .replace(replacePatterns.IMPORT_RE, (match, pre, quot, dep, post) => {
-      deps.sync.push(dep);
+      addDependency(dep);
       return match;
     })
     .replace(replacePatterns.EXPORT_RE, (match, pre, quot, dep, post) => {
-      deps.sync.push(dep);
+      addDependency(dep);
       return match;
     })
     .replace(replacePatterns.REQUIRE_RE, (match, pre, quot, dep, post) => {
-      deps.sync.push(dep);
+      addDependency(dep);
       return match;
     });
 
