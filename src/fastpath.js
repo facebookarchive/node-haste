@@ -467,15 +467,6 @@ if (IS_WINDOWS) {
   };
 }
 
-exports.replace = function _replace(props) {
-  if (!props) { props = all; }
-  if (!Array.isArray(props)) { props = [props]; }
-
-  props.forEach((name) => {
-    if (exports[name]) { path[name] = exports[name]; }
-  });
-};
-
 exports.extname = function _extname(filename) {
   if (!filename) { return ''; }
 
@@ -618,11 +609,11 @@ exports.dirname = function _dirname(filename) {
   return device + filename.slice(start, lastSep);
 };
 
-exports.replace = function (props) {
-  if (!props) props = all;
-  if (!Array.isArray(props)) props = [props];
+exports.replace = function(props) {
+  if (!props) { props = all; }
+  if (!Array.isArray(props)) { props = [props]; }
 
-  props.forEach(function (name) {
-    if (exports[name]) path[name] = exports[name];
+  props.forEach(function(name) {
+    if (exports[name]) { path[name] = exports[name]; }
   });
-}
+};

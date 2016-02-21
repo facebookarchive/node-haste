@@ -24,7 +24,6 @@ const Fastfs = require('../fastfs');
 const Module = require('../Module');
 const ModuleCache = require('../ModuleCache');
 const DependencyGraphHelpers = require('../DependencyGraph/DependencyGraphHelpers');
-const Promise = require('promise');
 const fs = require('graceful-fs');
 
 const packageJson =
@@ -77,6 +76,7 @@ describe('Module', () => {
     (options) => createModule({...options, file: '/root/package.json'});
 
   beforeEach(function(done) {
+    process.platform = 'linux';
     cache = createCache();
     fastfs = new Fastfs(
       'test',
@@ -203,7 +203,7 @@ describe('Module', () => {
     );
   });
 
-  describe('Extrators', () => {
+  describe('Extractors', () => {
 
     pit('uses custom require extractors if specified', () => {
       mockIndexFile('');

@@ -13,7 +13,6 @@ const Fastfs = require('./fastfs');
 const FileWatcher = require('./FileWatcher');
 const Module = require('./Module');
 const ModuleCache = require('./ModuleCache');
-const Promise = require('promise');
 const Polyfill = require('./Polyfill');
 const crawl = require('./crawlers');
 const extractRequires = require('./lib/extractRequires');
@@ -195,7 +194,6 @@ class DependencyGraph {
   }) {
     return this.load().then(() => {
       platform = this._getRequestPlatform(entryPath, platform);
-
       const absPath = path.resolve(entryPath);
       const req = new ResolutionRequest({
         platform,
@@ -272,7 +270,7 @@ class DependencyGraph {
     // After we process a file change we record any errors which will also be
     // reported via the next request. On the next file change, we'll see that
     // we are in an error state and we should decide to do a full rebuild.
-    this._loading = this._loading.finally(() => {
+    this._loading = this._loading.then(() => {
       if (this._hasteMapError) {
         console.warn(
           'Rebuilding haste map to recover from error:\n' +

@@ -1,6 +1,6 @@
 'use strict';
 
-const promiseify = require('../promiseify');
+const denodeify = require('denodeify');
 const path = require('../fastpath');
 
 const watchmanURL = 'https://facebook.github.io/watchman/docs/troubleshooting.html';
@@ -38,7 +38,7 @@ function watchmanRecReadDir(roots, {ignore, fileWatcher, exts}) {
             }
           }
 
-          const cmd = Promise.denodeify(watcher.client.command.bind(watcher.client));
+          const cmd = denodeify(watcher.client.command.bind(watcher.client));
           return cmd(['query', watchedRoot, {
             suffix: exts,
             expression: ['allof', ['type', 'f'], 'exists', dirExpr],

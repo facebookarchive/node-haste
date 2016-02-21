@@ -9,7 +9,6 @@
 'use strict';
 const path = require('../fastpath');
 const getPlatformExtension = require('../lib/getPlatformExtension');
-const Promise = require('promise');
 
 const GENERIC_PLATFORM = 'generic';
 const NATIVE_PLATFORM = 'native';
@@ -32,21 +31,17 @@ class HasteMap {
 
   build() {
     this._map = Object.create(null);
-
     const promises = [];
-
     this._fastfs.getAllFiles().forEach(filePath => {
       if (!this._helpers.isNodeModulesDir(filePath)) {
         if (this._extensions.indexOf(path.extname(filePath).substr(1)) !== -1) {
           promises.push(this._processHasteModule(filePath));
         }
-
         if (filePath.endsWith(PACKAGE_JSON)) {
           promises.push(this._processHastePackage(filePath));
         }
       }
     });
-
     return Promise.all(promises).then(() => this._map);
   }
 
@@ -92,21 +87,17 @@ class HasteMap {
     if (module == null && platform != null) {
       module = modulesMap[platform];
     }
-
     if (module == null && this._preferNativePlatform) {
       module = modulesMap[NATIVE_PLATFORM];
     }
-
     if (module == null) {
       module = modulesMap[GENERIC_PLATFORM];
     }
-
     return module;
   }
 
   _processHasteModule(file) {
     const module = this._moduleCache.getModule(file);
-
     return module.isHaste().then(
       isHaste => isHaste && module.getName()
         .then(name => this._updateHasteMap(name, module))
@@ -115,9 +106,7 @@ class HasteMap {
 
   _processHastePackage(file) {
     file = path.resolve(file);
-
     const p = this._moduleCache.getPackage(file);
-
     return p.isHaste()
       .then(isHaste => isHaste && p.getName()
             .then(name => this._updateHasteMap(name, p)))
@@ -126,7 +115,6 @@ class HasteMap {
           // Malformed package.json.
           return;
         }
-
         throw e;
       });
   }

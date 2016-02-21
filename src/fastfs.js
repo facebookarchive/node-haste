@@ -8,14 +8,14 @@
  */
 'use strict';
 
-const Promise = require('promise');
+const denodeify = require('denodeify');
 const {EventEmitter} = require('events');
 
 const fs = require('graceful-fs');
 const path = require('./fastpath');
 
-const readFile = Promise.denodeify(fs.readFile);
-const stat = Promise.denodeify(fs.stat);
+const readFile = denodeify(fs.readFile);
+const stat = denodeify(fs.stat);
 
 const NOT_FOUND_IN_ROOTS = 'NotFoundInRootsError';
 
@@ -36,7 +36,6 @@ class Fastfs extends EventEmitter {
 
       return new File(root, true);
     });
-
     this._fastPaths = Object.create(null);
     this._crawling = crawling;
     this._activity = activity;
@@ -46,21 +45,16 @@ class Fastfs extends EventEmitter {
     return this._crawling.then(files => {
       let fastfsActivity;
       const activity = this._activity;
-
       if (activity) {
         fastfsActivity = activity.startEvent('Building in-memory fs for ' + this._name);
       }
-
       files.forEach(filePath => {
         const root = this._getRoot(filePath);
-
         if (root) {
           const newFile = new File(filePath, false);
           const dirname = filePath.substr(0, filePath.lastIndexOf(path.sep));
           const parent = this._fastPaths[dirname];
-
           this._fastPaths[filePath] = newFile;
-
           if (parent) {
             parent.addChild(newFile, this._fastPaths);
           } else {
@@ -68,7 +62,6 @@ class Fastfs extends EventEmitter {
           }
         }
       });
-
       if (activity) {
         activity.endEvent(fastfsActivity);
       }
@@ -161,7 +154,7 @@ class Fastfs extends EventEmitter {
       throw new Error(`Expected file ${dirFile.path} to be a directory`);
     }
 
-    return Object.keys(dirFile.children) 
+    return Object.keys(dirFile.children)
       .filter(name => name.match(pattern))
       .map(name => path.join(dirFile.path, name));
   }
@@ -169,18 +162,15 @@ class Fastfs extends EventEmitter {
   _getRoot(filePath) {
     for (let i = 0; i < this._roots.length; i++) {
       const possibleRoot = this._roots[i];
-
       if (isDescendant(possibleRoot.path, filePath)) {
         return possibleRoot;
       }
     }
-
     return null;
   }
 
   _getAndAssertRoot(filePath) {
     const root = this._getRoot(filePath);
-
     if (!root) {
       const error = new Error(`File ${filePath} not found in any of the roots`);
       error.type = NOT_FOUND_IN_ROOTS;
@@ -191,7 +181,6 @@ class Fastfs extends EventEmitter {
 
   _getFile(filePath) {
     filePath = path.resolve(filePath);
-
     if (!this._fastPaths[filePath]) {
       const file = this._getAndAssertRoot(filePath).getFileFromPath(filePath);
       if (file) {
@@ -265,7 +254,6 @@ class File {
 
   addChild(file, fileMap) {
     const parts = file.path.substr(this.path.length + 1).split(path.sep);
-
     if (parts.length === 1) {
       this.children[parts[0]] = file;
       file.parent = this;

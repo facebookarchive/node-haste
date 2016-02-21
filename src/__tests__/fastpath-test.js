@@ -43,12 +43,12 @@ describe('fast-path', () => {
   ];
 
   const getErrorMessage = (fnName, test, expected, actual) => {
-      return [
-        `fp.${fnName}('${test}')`,
-        `expect=${JSON.stringify(expected)}`,
-        `actual=${JSON.stringify(actual)}`,
-      ].join('\n')
-    };
+    return [
+      `fp.${fnName}('${test}')`,
+      `expect=${JSON.stringify(expected)}`,
+      `actual=${JSON.stringify(actual)}`,
+    ].join('\n');
+  };
 
   beforeEach(function() {
     process.platform = 'linux';
@@ -61,7 +61,6 @@ describe('fast-path', () => {
   describe('basename', () => {
     it('should resolve given paths', () => {
       process.platform = actual_platform;
-      const fp = require('../index');
 
       expect(fp.basename(__filename)).toEqual('fastpath-test.js');
       expect(fp.basename(__filename, '.js')).toEqual('fastpath-test');
@@ -75,7 +74,6 @@ describe('fast-path', () => {
 
     it('should handle backslashes properly (win32)', () => {
       process.platform = 'win32';
-      const fp = require('../index');
 
       expect(fp.basename('\\dir\\basename.ext')).toEqual('basename.ext');
       expect(fp.basename('\\basename.ext')).toEqual('basename.ext');
@@ -85,8 +83,6 @@ describe('fast-path', () => {
     });
 
     it('should handle backslashes properly (posix)', () => {
-      const fp = require('../index');
-
       expect(fp.basename('\\dir\\basename.ext')).toEqual('\\dir\\basename.ext');
       expect(fp.basename('\\basename.ext')).toEqual('\\basename.ext');
       expect(fp.basename('basename.ext')).toEqual('basename.ext');
@@ -95,8 +91,6 @@ describe('fast-path', () => {
     });
 
     it('should handle control characters (posix)', () => {
-      const fp = require('../index');
-
       // POSIX filenames may include control characters
       // c.f. http://www.dwheeler.com/essays/fixing-unix-linux-filenames.html
       const name = 'Icon' + String.fromCharCode(13);
@@ -107,7 +101,6 @@ describe('fast-path', () => {
   describe('extname', () => {
     it('should extract the extension from a path', () => {
       process.platform = actual_platform;
-      const fp = require('../index');
 
       expect(fp.extname(__filename)).toEqual('.js');
       expect(fp.extname('')).toEqual('');
@@ -155,7 +148,6 @@ describe('fast-path', () => {
 
     it('should handle path backslashes (win32)', () => {
       process.platform = 'win32';
-      const fp = require('../index');
 
       // On windows, backspace is a path separator.
       expect(fp.extname('.\\')).toEqual('');
@@ -169,8 +161,6 @@ describe('fast-path', () => {
     });
 
     it('should handle path backslashes (posix)', () => {
-      const fp = require('../index');
-
       // On unix, backspace is a valid name component like any other character.
       expect(fp.extname('.\\')).toEqual('');
       expect(fp.extname('..\\')).toEqual('.\\');
@@ -185,8 +175,6 @@ describe('fast-path', () => {
 
   describe('dirname', () => {
     it('should isolate the directory name from a path (posix)', () => {
-      const fp = require('../index');
-
       expect(fp.dirname('/a/b/')).toEqual('/a');
       expect(fp.dirname('/a/b')).toEqual('/a');
       expect(fp.dirname('/a')).toEqual('/');
@@ -197,7 +185,6 @@ describe('fast-path', () => {
 
     it('should isolate the directory name from a path (win32)', () => {
       process.platform = 'win32';
-      const fp = require('../index');
 
       expect(fp.dirname('C:\\')).toEqual('C:\\');
       expect(fp.dirname('c:\\')).toEqual('c:\\');
@@ -327,8 +314,6 @@ describe('fast-path', () => {
     ]);
 
     it('should join the paths correctly (posix)', () => {
-      const fp = require('../index');
-
       posixJoinTests.forEach((test) => {
         const actual = fp.join.apply(fp, test[0]);
         const expected = test[1];
@@ -343,7 +328,6 @@ describe('fast-path', () => {
 
     it('should join the paths correctly (win32)', () => {
       process.platform = 'win32';
-      const fp = require('../index');
 
       win32JoinTests.forEach((test) => {
         const actual = fp.join.apply(fp, test[0]);
@@ -358,7 +342,6 @@ describe('fast-path', () => {
     });
 
     it('should throw for invalid input', () => {
-      const fp = require('../index');
       invalidInputTests.forEach((test) => {
         expect(() => fp.join(test)).toThrow();
       });
@@ -367,8 +350,6 @@ describe('fast-path', () => {
 
   describe('normalize', () => {
     it('should return a valid path (posix)', () => {
-      const fp = require('../index');
-
       expect(fp.normalize('./fixtures///b/../b/c.js')).toEqual('fixtures/b/c.js');
       expect(fp.normalize('/foo/../../../bar')).toEqual('/bar');
       expect(fp.normalize('a//b//../b')).toEqual('a/b');
@@ -378,8 +359,6 @@ describe('fast-path', () => {
 
     it('should return a valid path (win32)', () => {
       process.platform = 'win32';
-      const fp = require('../index');
-
       expect(fp.normalize('./fixtures///b/../b/c.js')).toEqual('fixtures\\b\\c.js');
       expect(fp.normalize('/foo/../../../bar')).toEqual('\\bar');
       expect(fp.normalize('a//b//../b')).toEqual('a\\b');
@@ -414,7 +393,6 @@ describe('fast-path', () => {
 
     it('should resolve the current working directory', () => {
       process.platform = actual_platform;
-      const fp = require('../index');
 
       const actual = fp.resolve('.');
       const expected = process.cwd();
@@ -423,8 +401,6 @@ describe('fast-path', () => {
     });
 
     it('should resolve paths (posix)', () => {
-      const fp = require('../index');
-
       posixResolveTests.forEach((test) => {
         const actual = fp.resolve.apply(fp, test[0]);
         const expected = test[1];
@@ -435,7 +411,6 @@ describe('fast-path', () => {
 
     it('should resolve paths (win32)', () => {
       process.platform = 'win32';
-      const fp = require('../index');
 
       win32ResolveTests.forEach((test) => {
         const actual = fp.resolve.apply(fp, test[0]);
@@ -446,8 +421,6 @@ describe('fast-path', () => {
     });
 
     it('should throw for invalid input', () => {
-      const fp = require('../index');
-
       invalidInputTests.forEach((test) => {
         expect(() => fp.resolve(test)).toThrow();
       });
@@ -456,8 +429,6 @@ describe('fast-path', () => {
 
   describe('isAbsolute', () => {
     it('should work (posix)', () => {
-      const fp = require('../index');
-
       expect(fp.isAbsolute('/home/foo')).toEqual(true);
       expect(fp.isAbsolute('/home/foo/..')).toEqual(true);
       expect(fp.isAbsolute('bar/')).toEqual(false);
@@ -466,8 +437,6 @@ describe('fast-path', () => {
 
     it('should work (win32)', () => {
       process.platform = 'win32';
-      const fp = require('../index');
-
       expect(fp.isAbsolute('//server/file')).toEqual(true);
       expect(fp.isAbsolute('\\\\server\\file')).toEqual(true);
       expect(fp.isAbsolute('C:/Users/')).toEqual(true);
@@ -504,8 +473,6 @@ describe('fast-path', () => {
     ];
 
     it('should work (posix)', () => {
-      const fp = require('../index');
-
       posixRelativeTests.forEach((test) => {
         const actual = fp.relative(test[0], test[1]);
         const expected = test[2];
@@ -520,7 +487,6 @@ describe('fast-path', () => {
 
     it('should work (win32)', () => {
       process.platform = 'win32';
-      const fp = require('../index');
 
       win32RelativeTests.forEach((test) => {
         const actual = fp.relative(test[0], test[1]);
@@ -538,14 +504,11 @@ describe('fast-path', () => {
   describe('(static export) sep', () => {
     it('should be a backslash (win32)', () => {
       process.platform = 'win32';
-      const fp = require('../index');
 
       expect(fp.sep).toEqual('\\');
     });
 
     it('should be a forward slash (posix)', () => {
-      const fp = require('../index');
-
       expect(fp.sep).toEqual('/');
     });
   });
@@ -553,14 +516,11 @@ describe('fast-path', () => {
   describe('(static export) delimiter', () => {
     it('should be a semicolon (win32)', () => {
       process.platform = 'win32';
-      const fp = require('../index');
 
       expect(fp.delimiter).toEqual(';');
     });
 
     it('should be a colon (posix)', () => {
-      const fp = require('../index');
-
       expect(fp.delimiter).toEqual(':');
     });
   });

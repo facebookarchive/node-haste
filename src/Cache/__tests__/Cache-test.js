@@ -18,7 +18,8 @@ jest
     tmpDir() { return 'tmpDir'; },
   });
 
-var Promise = require('promise');
+jest.useRealTimers();
+
 var fs = require('graceful-fs');
 
 var Cache = require('../');
@@ -240,7 +241,7 @@ describe('Cache', () => {
   });
 
   describe('writing cache to disk', () => {
-    it('should write cache to disk', () => {
+    it('should write cache to disk', (done) => {
       var index = 0;
       var mtimes = [10, 20, 30];
 
@@ -266,11 +267,10 @@ describe('Cache', () => {
         Promise.resolve('baz value')
       );
 
-      // jest has some trouble with promises and timeouts within promises :(
-      jest.runAllTimers();
-      jest.runAllTimers();
-
-      expect(fs.writeFile).toBeCalled();
+      setTimeout(() => {
+        expect(fs.writeFile).toBeCalled();
+        done();
+      }, 2001);
     });
   });
 
