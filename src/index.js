@@ -270,7 +270,7 @@ class DependencyGraph {
     // After we process a file change we record any errors which will also be
     // reported via the next request. On the next file change, we'll see that
     // we are in an error state and we should decide to do a full rebuild.
-    this._loading = this._loading.then(() => {
+    const resolve = () => {
       if (this._hasteMapError) {
         console.warn(
           'Rebuilding haste map to recover from error:\n' +
@@ -285,7 +285,8 @@ class DependencyGraph {
         this._loading.catch((e) => this._hasteMapError = e);
       }
       return this._loading;
-    });
+    };
+    this._loading = this._loading.then(resolve, resolve);
   }
 
   createPolyfill(options) {
