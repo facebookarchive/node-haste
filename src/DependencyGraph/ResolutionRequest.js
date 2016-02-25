@@ -10,11 +10,10 @@
 
 const debug = require('debug')('ReactNativePackager:DependencyGraph');
 const util = require('util');
-const path = require('fast-path');
+const path = require('../fastpath');
 const realPath = require('path');
 const isAbsolutePath = require('absolute-path');
 const getAssetDataFromName = require('../lib/getAssetDataFromName');
-const Promise = require('promise');
 const throat = require('throat')(Promise);
 
 const MAX_CONCURRENT_FILE_READS = 32;

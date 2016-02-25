@@ -9,8 +9,8 @@
 'use strict';
 
 const EventEmitter  = require('events').EventEmitter;
+const denodeify = require('denodeify');
 const sane = require('sane');
-const Promise = require('promise');
 const execSync = require('child_process').execSync;
 
 const MAX_WAIT_TIME = 120000;
@@ -40,9 +40,11 @@ class FileWatcher extends EventEmitter {
     super();
     this._watcherByRoot = Object.create(null);
 
-    this._loading = Promise.all(
-      rootConfigs.map(rootConfig => this._createWatcher(rootConfig))
-    ).then(watchers => {
+    const watcherPromises = rootConfigs.map((rootConfig) => {
+      return this._createWatcher(rootConfig);
+    });
+
+    this._loading = Promise.all(watcherPromises).then(watchers => {
       watchers.forEach((watcher, i) => {
         this._watcherByRoot[rootConfigs[i].dir] = watcher;
         watcher.on(
@@ -53,8 +55,6 @@ class FileWatcher extends EventEmitter {
       });
       return watchers;
     });
-
-    this._loading.done();
   }
 
   getWatchers() {
@@ -73,7 +73,7 @@ class FileWatcher extends EventEmitter {
     inited = false;
     return this._loading.then(
       (watchers) => watchers.map(
-        watcher => Promise.denodeify(watcher.close).call(watcher)
+        watcher => denodeify(watcher.close).call(watcher)
       )
     );
   }

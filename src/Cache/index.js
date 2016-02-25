@@ -8,11 +8,11 @@
  */
 'use strict';
 
-const Promise = require('promise');
+const denodeify = require('denodeify');
 const crypto = require('crypto');
 const fs = require('graceful-fs');
 const isAbsolutePath = require('absolute-path');
-const path = require('fast-path');
+const path = require('../fastpath');
 const tmpDir = require('os').tmpDir();
 
 function getObjectValues(object) {
@@ -40,10 +40,7 @@ class Cache {
       this._data = Object.create(null);
     }
 
-    this._persistEventually = debounce(
-      this._persistCache.bind(this),
-      2000,
-    );
+    this._persistEventually = debounce(this._persistCache.bind(this), 2000);
   }
 
   static getCacheFilePath(tmpdir, ...args) {
@@ -93,7 +90,7 @@ class Cache {
     record.data[field] = loaderPromise
       .then(data => Promise.all([
         data,
-        Promise.denodeify(fs.stat)(filepath),
+        denodeify(fs.stat)(filepath),
       ]))
       .then(([data, stat]) => {
         this._persistEventually();
@@ -155,7 +152,7 @@ class Cache {
           json[key].metadata = data[key].metadata;
           json[key].data = value.data;
         });
-        return Promise.denodeify(fs.writeFile)(cacheFilepath, JSON.stringify(json));
+        return denodeify(fs.writeFile)(cacheFilepath, JSON.stringify(json));
       })
       .catch(e => console.error('Error while persisting cache:', e.message))
       .then(() => {

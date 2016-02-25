@@ -7,9 +7,8 @@
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 'use strict';
-const path = require('fast-path');
+const path = require('../fastpath');
 const getPlatformExtension = require('../lib/getPlatformExtension');
-const Promise = require('promise');
 
 const GENERIC_PLATFORM = 'generic';
 const NATIVE_PLATFORM = 'native';

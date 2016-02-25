@@ -8,7 +8,7 @@
  */
 'use strict';
 
-const path = require('fast-path');
+const path = require('../fastpath');
 const getPlatformExtension = require('./getPlatformExtension');
 
 function getAssetDataFromName(filename) {

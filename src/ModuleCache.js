@@ -4,7 +4,7 @@ const AssetModule = require('./AssetModule');
 const Package = require('./Package');
 const Module = require('./Module');
 const Polyfill = require('./Polyfill');
-const path = require('fast-path');
+const path = require('./fastpath');
 
 class ModuleCache {
 

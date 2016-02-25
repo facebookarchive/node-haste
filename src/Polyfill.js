@@ -1,6 +1,5 @@
 'use strict';
 
-const Promise = require('promise');
 const Module = require('./Module');
 
 class Polyfill extends Module {

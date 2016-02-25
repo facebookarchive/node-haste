@@ -8,7 +8,7 @@
  */
 'use strict';
 
-const path = require('fast-path');
+const path = require('../fastpath');
 
 const NODE_MODULES = path.sep + 'node_modules' + path.sep;
 
