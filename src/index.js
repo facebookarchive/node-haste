@@ -17,6 +17,7 @@ const Polyfill = require('./Polyfill');
 const crawl = require('./crawlers');
 const extractRequires = require('./lib/extractRequires');
 const getAssetDataFromName = require('./lib/getAssetDataFromName');
+const getInverseDependencies = require('./lib/getInverseDependencies');
 const getPlatformExtension = require('./lib/getPlatformExtension');
 const isAbsolutePath = require('absolute-path');
 const replacePatterns = require('./lib/replacePatterns');
@@ -207,7 +208,7 @@ class DependencyGraph {
         shouldThrowOnUnresolvedErrors: this._opts.shouldThrowOnUnresolvedErrors,
       });
 
-      const response = new ResolutionResponse();
+      const response = new ResolutionResponse({transformOptions});
 
       return req.getOrderedDependencies({
         response,
@@ -304,6 +305,7 @@ Object.assign(DependencyGraph, {
   getAssetDataFromName,
   getPlatformExtension,
   replacePatterns,
+  getInverseDependencies,
 });
 
 function NotFoundError() {

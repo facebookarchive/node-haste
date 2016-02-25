@@ -9,7 +9,8 @@
 'use strict';
 
 class ResolutionResponse {
-  constructor() {
+  constructor({transformOptions}) {
+    this.transformOptions = transformOptions;
     this.dependencies = [];
     this.mainModuleId = null;
     this.mocks = null;
@@ -24,11 +25,15 @@ class ResolutionResponse {
       mainModuleId = this.mainModuleId,
       mocks = this.mocks,
     } = properties;
-    return Object.assign(new this.constructor(), this, {
-      dependencies,
-      mainModuleId,
-      mocks,
-    });
+    return Object.assign(
+      new this.constructor({transformOptions: this.transformOptions}),
+      this,
+      {
+        dependencies,
+        mainModuleId,
+        mocks,
+      },
+    );
   }
 
   _assertNotFinalized() {
