@@ -11,7 +11,6 @@
 jest.dontMock('../getInverseDependencies');
 
 const getInverseDependencies = require('../getInverseDependencies');
-const Promise = require('promise');
 
 describe('getInverseDependencies', () => {
   pit('', () => {
