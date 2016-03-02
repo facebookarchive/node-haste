@@ -1,17 +1,16 @@
 'use strict';
 
-const isAbsolutePath = require('absolute-path');
 const path = require('./fastpath');
-const builtins = require('browserify/lib/builtins');
 
 class Package {
 
-  constructor({ file, fastfs, cache }) {
+  constructor({ file, fastfs, cache, replacements = {} }) {
     this.path = file;
     this.root = path.dirname(this.path);
     this._fastfs = fastfs;
     this.type = 'Package';
     this._cache = cache;
+    this.replacements = replacements;
   }
 
   getMain() {
@@ -63,7 +62,7 @@ class Package {
       replacements[relName + '.json'],
       replacements[relPath],
       replacements[relPath + '.js'],
-      replacements[relPath + '.json']
+      replacements[relPath + '.json'],
     ];
     const matches = checks.filter(check => check !== undefined);
     if (matches[0] === false) {
@@ -77,15 +76,15 @@ class Package {
       let replacements = getReplacements(json);
       if (typeof replacements === 'string') {
         replacements = {
-          [json.main || 'index']: replacements
+          [json.main || 'index']: replacements,
         };
       }
-      let replacement = this.getReplacement(name, replacements);
+      const replacement = this.getReplacement(name, replacements);
       // no replacement
       if (replacement === undefined) {
         // could stil be requiring a builtin
-        if (builtins[name]) {
-          var redirect = path.relative(this.root, builtins[name]);
+        if (this.replacements[name]) {
+          var redirect = path.relative(this.root, this.replacements[name]);
           // cut off node_modules if the builtin is required
           // from the "index" of the react-native project
           if (redirect.slice(0, 13) === 'node_modules/') {
@@ -98,7 +97,7 @@ class Package {
       // replacement is false boolean
       if (replacement === false) {
         // find path to _empty.js
-        let emptyPath = require.resolve('browserify/lib/_empty.js');
+        const emptyPath = require.resolve('./_empty.js');
         return './' + path.relative(this.root, emptyPath);
       }
       // replacement is other module (or absolute path?)
