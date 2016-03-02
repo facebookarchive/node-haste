@@ -9,6 +9,7 @@
   "main": "lib/index.js",
   "dependencies": {
     "absolute-path": "^0.0.0",
+    "browserify": "^13.0.0",
     "debug": "^2.2.0",
     "denodeify": "^1.2.1",
     "graceful-fs": "^4.1.3",
