@@ -195,7 +195,7 @@ class DependencyGraph {
   }) {
     return this.load().then(() => {
       platform = this._getRequestPlatform(entryPath, platform);
-      const absPath = path.resolve(entryPath);
+      const absPath = this._getAbsolutePath(entryPath);
       const req = new ResolutionRequest({
         platform,
         preferNativePlatform: this._opts.preferNativePlatform,
