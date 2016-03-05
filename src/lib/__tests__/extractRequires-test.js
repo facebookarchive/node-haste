@@ -62,6 +62,20 @@ describe('extractRequires', () => {
     });
   });
 
+  it('should ignore requires in comments with Windows line endings', () => {
+    const code = [
+      '// const module1 = require("module1");',
+      '/**',
+      ' * const module2 = require("module2");',
+      ' */',
+    ].join('\r\n');
+
+    expect(extractRequires(code)).toEqual({
+      code: '',
+      deps: {sync: []},
+    });
+  });
+
   it('should dedup duplicated requires', () => {
     const code = `
       const module1 = require('module1');
