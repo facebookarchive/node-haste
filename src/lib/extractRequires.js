@@ -13,8 +13,8 @@ const replacePatterns = require('./replacePatterns');
 /**
  * Extract all required modules from a `code` string.
  */
-const blockCommentRe = /\/\*(.|\n|\r\n)*?\*\//g;
-const lineCommentRe = /\/\/.+(\n|\r\n|$)/g;
+const blockCommentRe = /\/\*[^]*?\*\//g;
+const lineCommentRe = /\/\/.*/g;
 function extractRequires(code) {
   const cache = Object.create(null);
   var deps = {
