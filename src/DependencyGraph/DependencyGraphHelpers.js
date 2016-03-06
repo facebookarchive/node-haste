@@ -19,9 +19,10 @@ class DependencyGraphHelpers {
     providesModuleNodeModules = [],
     assetExts = [],
   }) {
-    this._hasteRegex = buildHasteRegex(
-      this._resolveHastePackages(providesModuleNodeModules, roots)
-    );
+    const list = providesModuleNodeModules;
+    this._hasteRegex = list && list.length ? buildHasteRegex(
+      this._resolveHastePackages(list, roots)
+    ) : null;
     this._assetExts = assetExts;
   }
 
@@ -103,7 +104,7 @@ class DependencyGraphHelpers {
       return false;
     }
 
-    return !this._hasteRegex.test(file);
+    return this._hasteRegex ? !this._hasteRegex.test(file) : true;
   }
 
   isAssetFile(file) {

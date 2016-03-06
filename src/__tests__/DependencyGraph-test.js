@@ -2981,6 +2981,76 @@ describe('DependencyGraph', function() {
       });
     });
 
+    pit('should not have a naming collision error when two versions of the same package exist and providesModuleNodeModules is empty', function() {
+      var root = '/root';
+      fs.__setMockFilesystem({
+        'root': {
+          'index.js': [
+            '/**',
+            ' * @providesModule index',
+            ' */',
+          ].join('\n'),
+          'node_modules': {
+            // A peer version of haste-fbjs
+            'haste-fbjs': {
+              'package.json': JSON.stringify({
+                name: 'haste-fbjs',
+                main: 'main.js',
+              }),
+              'main.js': [
+                '/**',
+                ' * @providesModule shouldWork',
+                ' */',
+              ].join('\n'),
+            },
+            'react-native': {
+              'package.json': JSON.stringify({
+                name: 'react-native',
+                main: 'main.js',
+              }),
+              'node_modules': {
+                'haste-fbjs': {
+                  'package.json': JSON.stringify({
+                    name: 'haste-fbjs',
+                    main: 'main.js',
+                  }),
+                  'main.js': [
+                    '/**',
+                    ' * @providesModule shouldWork',
+                    ' */',
+                  ].join('\n'),
+                },
+              },
+            },
+          },
+        },
+      });
+
+      var dgraph = new DependencyGraph({
+        ...defaults,
+        providesModuleNodeModules: [],
+        roots: [root],
+      });
+
+      // We are not interested in dependencies. If the feature doesn't work, the
+      // Promise will throw and pit will catch it.
+      return getOrderedDependenciesAsJSON(dgraph, '/root/index.js').then(function(deps) {
+        expect(deps)
+          .toEqual([
+            {
+              id: 'index',
+              path: '/root/index.js',
+              dependencies: [],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
+            },
+          ]);
+      });
+    });
+
     pit('should ignore modules it cant find (assumes own require system)', function() {
       // For example SourceMap.js implements it's own require system.
       var root = '/root';
