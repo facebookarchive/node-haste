@@ -57,7 +57,7 @@ describe('extractRequires', () => {
     ].join('\n');
 
     expect(extractRequires(code)).toEqual({
-      code: '',
+      code: '\n',
       deps: {sync: []},
     });
   });
@@ -71,7 +71,22 @@ describe('extractRequires', () => {
     ].join('\r\n');
 
     expect(extractRequires(code)).toEqual({
-      code: '',
+      code: '\r\n',
+      deps: {sync: []},
+    });
+  });
+
+  it('should ignore requires in comments with unicode line endings', () => {
+    const code = [
+      '// const module1 = require("module1");\u2028',
+      '// const module1 = require("module2");\u2029',
+      '/*\u2028',
+      'const module2 = require("module3");\u2029',
+      ' */',
+    ].join('');
+
+    expect(extractRequires(code)).toEqual({
+      code: '\u2028\u2029',
       deps: {sync: []},
     });
   });
