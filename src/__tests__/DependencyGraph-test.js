@@ -89,14 +89,14 @@ describe('DependencyGraph', function() {
       cache: new Cache(),
       fileWatcher,
       providesModuleNodeModules: [
-        { name: 'haste-fbjs', parent: 'react-native' },
-        { name: 'react-haste' },
-        { name: 'react-native' },
+        'haste-fbjs',
+        'react-haste',
+        'react-native',
         // Parse requires AsyncStorage. They will
         // change that to require('react-native') which
         // should work after this release and we can
         // remove it from here.
-        { name: 'parse' },
+        'parse',
       ],
       platforms: ['ios', 'android'],
       shouldThrowOnUnresolvedErrors: () => false,
@@ -2901,85 +2901,6 @@ describe('DependencyGraph', function() {
       });
     });
 
-    pit('should not have a naming collision error when two versions of the same module exist', function() {
-      var root = '/root';
-      fs.__setMockFilesystem({
-        'root': {
-          'index.js': [
-            '/**',
-            ' * @providesModule index',
-            ' */',
-            'require("shouldWork");',
-          ].join('\n'),
-          'node_modules': {
-            // A peer version of haste-fbjs
-            'haste-fbjs': {
-              'package.json': JSON.stringify({
-                name: 'haste-fbjs',
-                main: 'main.js',
-              }),
-              'main.js': [
-                '/**',
-                ' * @providesModule shouldWork',
-                ' */',
-              ].join('\n'),
-            },
-            'react-native': {
-              'package.json': JSON.stringify({
-                name: 'react-native',
-                main: 'main.js',
-              }),
-              'node_modules': {
-                // the version of haste-fbjs that
-                // we specified to be a `providesModuleNodeModule`
-                'haste-fbjs': {
-                  'package.json': JSON.stringify({
-                    name: 'haste-fbjs',
-                    main: 'main.js',
-                  }),
-                  'main.js': [
-                    '/**',
-                    ' * @providesModule shouldWork',
-                    ' */',
-                  ].join('\n'),
-                },
-              },
-            },
-          },
-        },
-      });
-
-      var dgraph = new DependencyGraph({
-        ...defaults,
-        roots: [root],
-      });
-
-      return getOrderedDependenciesAsJSON(dgraph, '/root/index.js').then(function(deps) {
-        expect(deps)
-          .toEqual([
-            {
-              id: 'index',
-              path: '/root/index.js',
-              dependencies: ['shouldWork'],
-              isAsset: false,
-              isAsset_DEPRECATED: false,
-              isJSON: false,
-              isPolyfill: false,
-              resolution: undefined,
-            },
-            {
-              id: 'shouldWork',
-              path: '/root/node_modules/react-native/node_modules/haste-fbjs/main.js',
-              dependencies: [],
-              isAsset: false,
-              isAsset_DEPRECATED: false,
-              isJSON: false,
-              isPolyfill: false,
-              resolution: undefined,
-            },
-          ]);
-      });
-    });
 
     pit('should ignore modules it cant find (assumes own require system)', function() {
       // For example SourceMap.js implements it's own require system.
