@@ -14,6 +14,7 @@ class ModuleCache {
     extractRequires,
     transformCode,
     depGraphHelpers,
+    assetDependencies,
   }) {
     this._moduleCache = Object.create(null);
     this._packageCache = Object.create(null);
@@ -22,6 +23,7 @@ class ModuleCache {
     this._extractRequires = extractRequires;
     this._transformCode = transformCode;
     this._depGraphHelpers = depGraphHelpers;
+    this._assetDependencies = assetDependencies;
 
     fastfs.on('change', this._processFileChange.bind(this));
   }
@@ -52,6 +54,7 @@ class ModuleCache {
         fastfs: this._fastfs,
         moduleCache: this,
         cache: this._cache,
+        dependencies: this._assetDependencies,
       });
     }
     return this._moduleCache[filePath];

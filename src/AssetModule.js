@@ -4,12 +4,13 @@ const Module = require('./Module');
 const getAssetDataFromName = require('./lib/getAssetDataFromName');
 
 class AssetModule extends Module {
-  constructor(...args) {
-    super(...args);
+  constructor(args) {
+    super(args);
     const { resolution, name, type } = getAssetDataFromName(this.path);
     this.resolution = resolution;
     this._name = name;
     this._type = type;
+    this._dependencies = args.dependencies || [];
   }
 
   isHaste() {
@@ -17,7 +18,7 @@ class AssetModule extends Module {
   }
 
   getDependencies() {
-    return Promise.resolve([]);
+    return Promise.resolve(this._dependencies);
   }
 
   read() {
