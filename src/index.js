@@ -54,6 +54,7 @@ class DependencyGraph {
     transformCode,
     shouldThrowOnUnresolvedErrors = () => true,
     enableAssetMap,
+    assetDependencies,
   }) {
     this._opts = {
       activity: activity || defaultActivity,
@@ -73,6 +74,7 @@ class DependencyGraph {
       enableAssetMap: enableAssetMap || true,
     };
     this._cache = cache;
+    this._assetDependencies = assetDependencies;
     this._helpers = new DependencyGraphHelpers(this._opts);
     this.load();
   }
@@ -112,6 +114,7 @@ class DependencyGraph {
       extractRequires: this._opts.extractRequires,
       transformCode: this._opts.transformCode,
       depGraphHelpers: this._helpers,
+      assetDependencies: this._assetDependencies,
     });
 
     this._hasteMap = new HasteMap({

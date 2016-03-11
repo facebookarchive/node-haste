@@ -5505,4 +5505,31 @@ describe('DependencyGraph', function() {
       });
     });
   });
+
+  describe('Asset module dependencies', () => {
+    pit('allows setting dependencies for asset modules', () => {
+      const assetDependencies = ['arbitrary', 'dependencies'];
+
+      fs.__setMockFilesystem({
+        'root': {
+          'index.js': 'require("./a.png")',
+          'a.png' : '',
+        },
+      });
+
+      const dependencyGraph = new DependencyGraph({
+        ...defaults,
+        assetDependencies,
+        roots: ['/root'],
+      });
+
+      return dependencyGraph.getDependencies({
+        entryPath: '/root/index.js',
+      }).then(({dependencies}) => {
+        const [, assetModule] = dependencies;
+        return assetModule.getDependencies()
+          .then(deps => expect(deps).toBe(assetDependencies));
+      });
+    });
+  });
 });
