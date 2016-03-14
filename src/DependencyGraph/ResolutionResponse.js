@@ -25,6 +25,10 @@ class ResolutionResponse {
       mainModuleId = this.mainModuleId,
       mocks = this.mocks,
     } = properties;
+
+    const numPrependedDependencies = dependencies === this.dependencies
+      ? this.numPrependedDependencies : 0;
+
     return Object.assign(
       new this.constructor({transformOptions: this.transformOptions}),
       this,
@@ -32,6 +36,7 @@ class ResolutionResponse {
         dependencies,
         mainModuleId,
         mocks,
+        numPrependedDependencies,
       },
     );
   }
