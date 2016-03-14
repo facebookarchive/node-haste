@@ -13,7 +13,7 @@ jest.dontMock('../getInverseDependencies');
 const getInverseDependencies = require('../getInverseDependencies');
 
 describe('getInverseDependencies', () => {
-  pit('', () => {
+  it('', () => {
     const module1 = createModule('module1', ['module2', 'module3']);
     const module2 = createModule('module2', ['module3', 'module4']);
     const module3 = createModule('module3', ['module4']);
@@ -33,13 +33,16 @@ describe('getInverseDependencies', () => {
       },
     };
 
-    return getInverseDependencies(resolutionResponse).then(dependencies =>
-      expect(dependencies).toEqual({
-        module2: ['module1'],
-        module3: ['module1', 'module2'],
-        module4: ['module2', 'module3'],
-      })
-    );
+    const dependencies = getInverseDependencies(resolutionResponse);
+    const actual = // jest can't compare maps and sets
+      Array.from(dependencies.entries())
+        .map(([key, value]) => [key, Array.from(value)]);
+
+    expect(actual).toEqual([
+      [module2, [module1]],
+      [module3, [module1, module2]],
+      [module4, [module2, module3]],
+    ]);
   });
 });
 
