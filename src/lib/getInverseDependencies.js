@@ -9,48 +9,34 @@
 'use strict';
 
 function resolveModuleRequires(resolutionResponse, module) {
-  const resolvedDeps = Object.create(null);
+  const pairs = resolutionResponse.getResolvedDependencyPairs(module);
+  return pairs
+    ? pairs.map(([, dependencyModule]) => dependencyModule)
+    : [];
+}
 
-  const resolvedPairs = resolutionResponse.getResolvedDependencyPairs(module);
-  if (!resolvedPairs) {
-    return Promise.resolve([]);
+function getModuleDependents(cache, module) {
+  let dependents = cache.get(module);
+  if (!dependents) {
+    dependents = new Set();
+    cache.set(module, dependents);
   }
-
-  return Promise.all(
-    resolvedPairs.map(
-      ([depName, depModule]) => {
-        if (depModule) {
-          return depModule.getName().then(name => {
-            resolvedDeps[depName] = name;
-          });
-        }
-      }
-    )
-  )
-  .then(() => module.getDependencies(resolutionResponse.transformOptions))
-  .then(dependencies => dependencies.map(dep => resolvedDeps[dep] || dep));
+  return dependents;
 }
 
 /**
  * Returns an object that indicates in which module each module is required.
  */
 function getInverseDependencies(resolutionResponse) {
-  const cache = Object.create(null);
+  const cache = new Map();
 
-  return Promise.all(resolutionResponse.dependencies.map(module => {
-    return Promise.all([
-      module.getName(),
-      resolveModuleRequires(resolutionResponse, module),
-    ]).then(([moduleName, resolvedDependencies]) => {
-      resolvedDependencies.forEach(dep => {
-        if (!cache[dep]) {
-          cache[dep] = [];
-        }
-
-        cache[dep].push(moduleName);
-      });
+  resolutionResponse.dependencies.forEach(module => {
+    resolveModuleRequires(resolutionResponse, module).forEach(dependency => {
+      getModuleDependents(cache, dependency).add(module);
     });
-  })).then(() => cache);
+  });
+
+  return cache;
 }
 
 module.exports = getInverseDependencies;
