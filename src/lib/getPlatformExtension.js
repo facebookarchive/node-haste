@@ -8,22 +8,21 @@
  */
 'use strict';
 
-const SUPPORTED_PLATFORM_EXTS = {
-  android: true,
-  ios: true,
-  web: true,
-  ubuntu: true,
-};
+const SUPPORTED_PLATFORM_EXTS = [
+  'android',
+  'ios',
+  'web',
+];
 
 // Extract platform extension: index.ios.js -> ios
-function getPlatformExtension(file) {
+function getPlatformExtension(file, platforms = SUPPORTED_PLATFORM_EXTS) {
   const last = file.lastIndexOf('.');
   const secondToLast = file.lastIndexOf('.', last - 1);
   if (secondToLast === -1) {
     return null;
   }
   const platform = file.substring(secondToLast + 1, last);
-  return SUPPORTED_PLATFORM_EXTS[platform] ? platform : null;
+  return platforms.indexOf(platform) !== -1 ? platform : null;
 }
 
 module.exports = getPlatformExtension;

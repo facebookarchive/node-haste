@@ -6,7 +6,7 @@ const getAssetDataFromName = require('./lib/getAssetDataFromName');
 class AssetModule extends Module {
   constructor(...args) {
     super(...args);
-    const { resolution, name, type } = getAssetDataFromName(this.path);
+    const { resolution, name, type } = getAssetDataFromName(this.path, this._platforms);
     this.resolution = resolution;
     this._name = name;
     this._type = type;

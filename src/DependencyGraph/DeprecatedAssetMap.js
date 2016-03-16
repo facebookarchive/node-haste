@@ -23,6 +23,7 @@ class DeprecatedAssetMap {
     helpers,
     activity,
     enabled,
+    platforms,
   }) {
     if (roots == null || roots.length === 0 || !enabled) {
       this._disabled = true;
@@ -33,6 +34,7 @@ class DeprecatedAssetMap {
     this._map = Object.create(null);
     this._assetExts = assetExts;
     this._activity = activity;
+    this._platforms = platforms;
 
     if (!this._disabled) {
       this._fastfs = new Fastfs(
@@ -95,7 +97,7 @@ class DeprecatedAssetMap {
         debug('Conflicting assets', name);
       }
 
-      this._map[name] = new AssetModule_DEPRECATED({ file });
+      this._map[name] = new AssetModule_DEPRECATED({ file, platforms: this._platforms });
     }
   }
 

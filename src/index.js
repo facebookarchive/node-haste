@@ -112,6 +112,7 @@ class DependencyGraph {
       extractRequires: this._opts.extractRequires,
       transformCode: this._opts.transformCode,
       depGraphHelpers: this._helpers,
+      platforms: this._opts.platforms,
     });
 
     this._hasteMap = new HasteMap({
@@ -120,6 +121,7 @@ class DependencyGraph {
       moduleCache: this._moduleCache,
       preferNativePlatform: this._opts.preferNativePlatform,
       helpers: this._helpers,
+      platforms: this._opts.platforms,
     });
 
     this._deprecatedAssetMap = new DeprecatedAssetMap({
@@ -131,6 +133,7 @@ class DependencyGraph {
       assetExts: this._opts.assetExts,
       activity: this._opts.activity,
       enabled: this._opts.enableAssetMap,
+      platforms: this._opts.platforms,
     });
 
     this._loading = Promise.all([
@@ -198,6 +201,7 @@ class DependencyGraph {
       const absPath = this._getAbsolutePath(entryPath);
       const req = new ResolutionRequest({
         platform,
+        platforms: this._opts.platforms,
         preferNativePlatform: this._opts.preferNativePlatform,
         entryPath: absPath,
         deprecatedAssetMap: this._deprecatedAssetMap,
@@ -226,10 +230,7 @@ class DependencyGraph {
 
   _getRequestPlatform(entryPath, platform) {
     if (platform == null) {
-      platform = getPlatformExtension(entryPath);
-      if (platform == null || this._opts.platforms.indexOf(platform) === -1) {
-        platform = null;
-      }
+      platform = getPlatformExtension(entryPath, this._opts.platforms);
     } else if (this._opts.platforms.indexOf(platform) === -1) {
       throw new Error('Unrecognized platform: ' + platform);
     }
