@@ -8,6 +8,8 @@
  */
 'use strict';
 
+const AsyncTaskGroup = require('../lib/AsyncTaskGroup');
+const MapWithDefaults = require('../lib/MapWithDefaults');
 const debug = require('debug')('ReactNativePackager:DependencyGraph');
 const util = require('util');
 const path = require('../fastpath');
@@ -120,86 +122,127 @@ class ResolutionRequest {
     return this._getAllMocks(mocksPattern).then(allMocks => {
       const entry = this._moduleCache.getModule(this._entryPath);
       const mocks = Object.create(null);
-      const visited = Object.create(null);
-      visited[entry.hash()] = true;
 
       response.pushDependency(entry);
       let totalModules = 1;
       let finishedModules = 0;
 
-      const collect = (mod) => {
-        return getDependencies(mod, transformOptions).then(
-          depNames => Promise.all(
-            depNames.map(name => this.resolveDependency(mod, name))
-          ).then((dependencies) => [depNames, dependencies])
-        ).then(([depNames, dependencies]) => {
-          if (allMocks) {
-            const list = [mod.getName()];
-            const pkg = mod.getPackage();
-            if (pkg) {
-              list.push(pkg.getName());
-            }
-            return Promise.all(list).then(names => {
-              names.forEach(name => {
-                if (allMocks[name] && !mocks[name]) {
-                  const mockModule =
-                    this._moduleCache.getModule(allMocks[name]);
-                  depNames.push(name);
-                  dependencies.push(mockModule);
-                  mocks[name] = allMocks[name];
-                }
-              });
-              return [depNames, dependencies];
-            });
-          }
-          return [depNames, dependencies];
-        }).then(([depNames, dependencies]) => {
-          const filteredPairs = [];
-
-          dependencies.forEach((modDep, i) => {
-            const name = depNames[i];
-            if (modDep == null) {
-              // It is possible to require mocks that don't have a real
-              // module backing them. If a dependency cannot be found but there
-              // exists a mock with the desired ID, resolve it and add it as
-              // a dependency.
-              if (allMocks && allMocks[name] && !mocks[name]) {
-                const mockModule = this._moduleCache.getModule(allMocks[name]);
-                mocks[name] = allMocks[name];
-                return filteredPairs.push([name, mockModule]);
-              }
-
-              debug(
-                'WARNING: Cannot find required module `%s` from module `%s`',
-                name,
-                mod.path
-              );
-              return false;
-            }
-            return filteredPairs.push([name, modDep]);
-          });
-
-          response.setResolvedDependencyPairs(mod, filteredPairs);
-
-          const newDependencies =
-            filteredPairs.filter(([, modDep]) => !visited[modDep.hash()]);
-
-          if (onProgress) {
-            finishedModules += 1;
-            totalModules += newDependencies.length;
-            onProgress(finishedModules, totalModules);
-          }
-          return Promise.all(
-            newDependencies.map(([depName, modDep]) => {
-              visited[modDep.hash()] = true;
-              return Promise.all([modDep, recursive ? collect(modDep) : []]);
-            })
+      const resolveDependencies = module =>
+        getDependencies(module, transformOptions)
+          .then(dependencyNames =>
+            Promise.all(
+              dependencyNames.map(name => this.resolveDependency(module, name))
+            ).then(dependencies => [dependencyNames, dependencies])
           );
+
+      const addMockDependencies = !allMocks
+        ? (module, result) => result
+        : (module, [dependencyNames, dependencies]) => {
+          const list = [module.getName()];
+          const pkg = module.getPackage();
+          if (pkg) {
+            list.push(pkg.getName());
+          }
+          return Promise.all(list).then(names => {
+            names.forEach(name => {
+              if (allMocks[name] && !mocks[name]) {
+                const mockModule = this._moduleCache.getModule(allMocks[name]);
+                dependencyNames.push(name);
+                dependencies.push(mockModule);
+                mocks[name] = allMocks[name];
+              }
+            });
+            return [dependencyNames, dependencies];
+          });
+        };
+
+      const collectedDependencies = new MapWithDefaults(module => collect(module));
+      const crawlDependencies = (mod, [depNames, dependencies]) => {
+        const filteredPairs = [];
+
+        dependencies.forEach((modDep, i) => {
+          const name = depNames[i];
+          if (modDep == null) {
+            // It is possible to require mocks that don't have a real
+            // module backing them. If a dependency cannot be found but there
+            // exists a mock with the desired ID, resolve it and add it as
+            // a dependency.
+            if (allMocks && allMocks[name] && !mocks[name]) {
+              const mockModule = this._moduleCache.getModule(allMocks[name]);
+              mocks[name] = allMocks[name];
+              return filteredPairs.push([name, mockModule]);
+            }
+
+            debug(
+              'WARNING: Cannot find required module `%s` from module `%s`',
+              name,
+              mod.path
+            );
+            return false;
+          }
+          return filteredPairs.push([name, modDep]);
         });
+
+        response.setResolvedDependencyPairs(mod, filteredPairs);
+
+        const dependencyModules = filteredPairs.map(([, m]) => m);
+        const newDependencies =
+          dependencyModules.filter(m => !collectedDependencies.has(m));
+
+        if (onProgress) {
+          finishedModules += 1;
+          totalModules += newDependencies.length;
+          onProgress(finishedModules, totalModules);
+        }
+
+        if (recursive) {
+          // doesn't block the return of this function invocation, but defers
+          // the resulution of collectionsInProgress.done.then(…)
+          dependencyModules
+            .forEach(dependency => collectedDependencies.get(dependency));
+        }
+        return dependencyModules;
       };
 
-      return collect(entry).then(deps => {
-        recursiveFlatten(deps).forEach(dep => response.pushDependency(dep));
+      const collectionsInProgress = new AsyncTaskGroup();
+      function collect(module) {
+        collectionsInProgress.start(module);
+        return resolveDependencies(module)
+          .then(result => addMockDependencies(module, result))
+          .then(result => crawlDependencies(module, result))
+          .then(result => {
+            collectionsInProgress.end(module);
+            return result;
+          });
+      }
+
+      return Promise.all([
+        // kicks off recursive dependency discovery, but doesn't block until it's done
+        collectedDependencies.get(entry),
+
+        // resolves when there are no more modules resolving dependencies
+        collectionsInProgress.done,
+      ]).then(([rootDependencies]) => {
+        return Promise.all(
+          Array.from(collectedDependencies, resolveKeyWithPromise)
+        ).then(moduleToDependenciesPairs =>
+          [rootDependencies, new MapWithDefaults(() => [], moduleToDependenciesPairs)]
+        );
+      }).then(([rootDependencies, moduleDependencies]) => {
+        // serialize dependencies, and make sure that every single one is only
+        // included once
+        const seen = new Set([entry]);
+        function traverse(dependencies) {
+          dependencies.forEach(dependency => {
+            if (seen.has(dependency)) { return; }
+
+            seen.add(dependency);
+            response.pushDependency(dependency);
+            traverse(moduleDependencies.get(dependency));
+          });
+        }
+
+        traverse(rootDependencies);
         response.setMocks(mocks);
       });
     });
@@ -460,11 +503,8 @@ function normalizePath(modulePath) {
   return modulePath.replace(/\/$/, '');
 }
 
-function recursiveFlatten(array) {
-  return Array.prototype.concat.apply(
-    Array.prototype,
-    array.map(item => Array.isArray(item) ? recursiveFlatten(item) : item)
-  );
+function resolveKeyWithPromise([key, promise]) {
+  return promise.then(value => [key, value]);
 }
 
 module.exports = ResolutionRequest;
