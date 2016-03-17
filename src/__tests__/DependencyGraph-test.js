@@ -13,6 +13,7 @@ jest.autoMockOff();
 jest.mock('fs');
 
 const DependencyGraph = require('../index');
+const Module = require('../Module');
 const fs = require('graceful-fs');
 
 const mocksPattern = /(?:[\\/]|^)__mocks__[\\/]([^\/]+)\.js$/;
@@ -5532,4 +5533,113 @@ describe('DependencyGraph', function() {
       });
     });
   });
+
+  describe('Deterministic order of dependencies', () => {
+    let callDeferreds, dependencyGraph, moduleReadDeferreds;
+    const moduleRead = Module.prototype.read;
+
+    beforeEach(() => {
+      fs.__setMockFilesystem({
+        'root': {
+          'index.js': `
+            require('./a');
+            require('./b');
+          `,
+          'a.js': `
+            require('./c');
+            require('./d');
+          `,
+          'b.js': `
+            require('./c');
+            require('./d');
+          `,
+          'c.js': 'require("./e");',
+          'd.js': '',
+          'e.js': 'require("./f");',
+          'f.js': 'require("./c");', // circular dependency
+        },
+      });
+      dependencyGraph = new DependencyGraph({
+        ...defaults,
+        roots: ['/root'],
+      });
+      moduleReadDeferreds = {};
+      callDeferreds = [defer()/* a.js */, defer()/* b.js */];
+
+      Module.prototype.read = jest.genMockFn().mockImplementation(function() {
+        const returnValue = moduleRead.apply(this, arguments);
+        if (/\/[ab]\.js$/.test(this.path)) {
+          let deferred = moduleReadDeferreds[this.path];
+          if (!deferred) {
+            deferred = moduleReadDeferreds[this.path] = defer(returnValue);
+            const index = Number(this.path.endsWith('b.js')); // 0 or 1
+            callDeferreds[index].resolve();
+          }
+          return deferred.promise;
+        }
+
+        return returnValue;
+      });
+    });
+
+    afterEach(() => {
+      Module.prototype.read = moduleRead;
+    });
+
+    pit('produces a deterministic tree if the "a" module resolves first', () => {
+      const dependenciesPromise = getOrderedDependenciesAsJSON(dependencyGraph, 'index.js');
+
+      return Promise.all(callDeferreds.map(deferred => deferred.promise))
+        .then(() => {
+          const main = moduleReadDeferreds['/root/a.js'];
+          main.promise.then(() => {
+            moduleReadDeferreds['/root/b.js'].resolve();
+          });
+          main.resolve();
+          return dependenciesPromise;
+        }).then(result => {
+          const names = result.map(({path}) => path.split('/').pop());
+          expect(names).toEqual([
+            'index.js',
+            'a.js',
+            'c.js',
+            'e.js',
+            'f.js',
+            'd.js',
+            'b.js',
+          ]);
+        });
+    });
+
+    pit('produces a deterministic tree if the "b" module resolves first', () => {
+      const dependenciesPromise = getOrderedDependenciesAsJSON(dependencyGraph, 'index.js');
+
+      return Promise.all(callDeferreds.map(deferred => deferred.promise))
+        .then(() => {
+          const main = moduleReadDeferreds['/root/b.js'];
+          main.promise.then(() => {
+            moduleReadDeferreds['/root/a.js'].resolve();
+          });
+          main.resolve();
+          return dependenciesPromise;
+        }).then(result => {
+          const names = result.map(({path}) => path.split('/').pop());
+          expect(names).toEqual([
+            'index.js',
+            'a.js',
+            'c.js',
+            'e.js',
+            'f.js',
+            'd.js',
+            'b.js',
+          ]);
+        });
+    });
+  });
+
+  function defer(value) {
+    let resolve;
+    const promise = new Promise(r => { resolve = r; });
+    return {promise, resolve: () => resolve(value)};
+  }
 });
