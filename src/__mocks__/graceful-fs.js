@@ -126,31 +126,25 @@ fs.statSync.mockImpl(function(filepath) {
   };
 
   if (node.SYMLINK) {
-    fs.statSync(node.SYMLINK, callback);
+    fs.statSync(node.SYMLINK);
     return;
   }
 
+  var isDirectory = false;
+
   if (node && typeof node === 'object') {
-    return {
-      isDirectory: function() {
-        return true;
-      },
-      isSymbolicLink: function() {
-        return false;
-      },
-      mtime: mtime,
-    };
-  } else {
-    return {
-      isDirectory: function() {
-        return false;
-      },
-      isSymbolicLink: function() {
-        return false;
-      },
-      mtime: mtime,
-    };
+    isDirectory = true
   }
+
+  return {
+    isDirectory: function() {
+      return true;
+    },
+    isSymbolicLink: function() {
+      return false;
+    },
+    mtime: mtime,
+  };
 });
 
 fs.lstatSync.mockImpl(function(filepath) {
