@@ -30,6 +30,10 @@ fs.realpath.mockImpl(function(filepath, callback) {
   callback(null, filepath);
 });
 
+fs.readdirSync.mockImpl(function(filepath) {
+  return Object.keys(getToNode(filepath));
+});
+
 fs.readdir.mockImpl(function(filepath, callback) {
   callback = asyncCallback(callback);
   var node;
@@ -109,6 +113,87 @@ fs.stat.mockImpl(function(filepath, callback) {
       },
       mtime: mtime,
     });
+  }
+});
+
+fs.statSync.mockImpl(function(filepath) {
+  var node = getToNode(filepath);
+
+  var mtime = {
+    getTime: function() {
+      return Math.ceil(Math.random() * 10000000);
+    },
+  };
+
+  if (node.SYMLINK) {
+    fs.statSync(node.SYMLINK, callback);
+    return;
+  }
+
+  if (node && typeof node === 'object') {
+    return {
+      isDirectory: function() {
+        return true;
+      },
+      isSymbolicLink: function() {
+        return false;
+      },
+      mtime: mtime,
+    };
+  } else {
+    return {
+      isDirectory: function() {
+        return false;
+      },
+      isSymbolicLink: function() {
+        return false;
+      },
+      mtime: mtime,
+    };
+  }
+});
+
+fs.lstatSync.mockImpl(function(filepath) {
+  var node = getToNode(filepath);
+
+  var mtime = {
+    getTime: function() {
+      return Math.ceil(Math.random() * 10000000);
+    },
+  };
+
+  if (node.SYMLINK) {
+    return {
+      isDirectory: function() {
+        return false;
+      },
+      isSymbolicLink: function() {
+        return true;
+      },
+      mtime: mtime,
+    };
+  }
+
+  if (node && typeof node === 'object') {
+    return {
+      isDirectory: function() {
+        return true;
+      },
+      isSymbolicLink: function() {
+        return false;
+      },
+      mtime: mtime,
+    };
+  } else {
+    return {
+      isDirectory: function() {
+        return false;
+      },
+      isSymbolicLink: function() {
+        return false;
+      },
+      mtime: mtime,
+    };
   }
 });
 
