@@ -11,9 +11,9 @@
 const fs = jest.genMockFromModule('fs');
 const noop = () => {};
 
-const asyncCallback = (cb) => function() {
-  setImmediate(() => cb.apply(this, arguments));
-};
+function asyncCallback(cb) {
+  return () => setImmediate(() => cb.apply(this, arguments));
+}
 
 const mtime = {
   getTime: () => Math.ceil(Math.random() * 10000000),
@@ -111,14 +111,8 @@ fs.statSync.mockImpl((filepath) => {
     return fs.statSync(node.SYMLINK);
   }
 
-  let isDirectory = false;
-
-  if (node && typeof node === 'object') {
-    isDirectory = true;
-  }
-
   return {
-    isDirectory: () => isDirectory,
+    isDirectory: () => node && typeof node === 'object',
     isSymbolicLink: () => false,
     mtime,
   };
@@ -135,13 +129,8 @@ fs.lstatSync.mockImpl((filepath) => {
     };
   }
 
-  let isDirectory = false;
-  if (node && typeof node === 'object') {
-    isDirectory = true;
-  }
-
   return {
-    isDirectory: () => isDirectory,
+    isDirectory: () => node && typeof node === 'object',
     isSymbolicLink: () => false,
     mtime,
   };
