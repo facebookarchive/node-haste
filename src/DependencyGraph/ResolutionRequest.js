@@ -207,13 +207,12 @@ class ResolutionRequest {
       const collectionsInProgress = new AsyncTaskGroup();
       function collect(module) {
         collectionsInProgress.start(module);
-        return resolveDependencies(module)
+        const result = resolveDependencies(module)
           .then(result => addMockDependencies(module, result))
-          .then(result => crawlDependencies(module, result))
-          .then(result => {
-            collectionsInProgress.end(module);
-            return result;
-          });
+          .then(result => crawlDependencies(module, result));
+        const end = () => collectionsInProgress.end(module);
+        result.then(end, end);
+        return result;
       }
 
       return Promise.all([
