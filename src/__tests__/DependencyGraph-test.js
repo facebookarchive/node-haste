@@ -18,6 +18,8 @@ const fs = require('graceful-fs');
 
 const mocksPattern = /(?:[\\/]|^)__mocks__[\\/]([^\/]+)\.js$/;
 
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+
 describe('DependencyGraph', function() {
   let defaults;
 
