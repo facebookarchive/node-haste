@@ -12,7 +12,9 @@ const fs = jest.genMockFromModule('fs');
 const noop = () => {};
 
 function asyncCallback(cb) {
-  return () => setImmediate(() => cb.apply(this, arguments));
+  return function() {
+    setImmediate(() => cb.apply(this, arguments));
+  };
 }
 
 const mtime = {
