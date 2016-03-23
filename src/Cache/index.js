@@ -154,7 +154,10 @@ class Cache {
         });
         return denodeify(fs.writeFile)(cacheFilepath, JSON.stringify(json));
       })
-      .catch(e => console.error('Error while persisting cache:', e.message))
+      .catch(e => console.error(
+        '[node-haste] Encountered an error while persisting cache:\n%s',
+        e.stack.split('\n').map(line => '> ' + line).join('\n')
+      ))
       .then(() => {
         this._persisting = null;
         return true;
