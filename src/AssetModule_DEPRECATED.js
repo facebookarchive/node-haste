@@ -6,7 +6,7 @@ const getAssetDataFromName = require('./lib/getAssetDataFromName');
 class AssetModule_DEPRECATED extends Module {
   constructor(...args) {
     super(...args);
-    const {resolution, name} = getAssetDataFromName(this.path);
+    const {resolution, name} = getAssetDataFromName(this.path, this._platforms);
     this.resolution = resolution;
     this.name = name;
   }
@@ -36,7 +36,7 @@ class AssetModule_DEPRECATED extends Module {
   }
 
   resolution() {
-    return getAssetDataFromName(this.path).resolution;
+    return getAssetDataFromName(this.path, this._platforms).resolution;
   }
 
 }

@@ -11,9 +11,9 @@
 const path = require('../fastpath');
 const getPlatformExtension = require('./getPlatformExtension');
 
-function getAssetDataFromName(filename) {
+function getAssetDataFromName(filename, platforms) {
   const ext = path.extname(filename);
-  const platformExt = getPlatformExtension(filename);
+  const platformExt = getPlatformExtension(filename, platforms);
 
   let pattern = '@([\\d\\.]+)x';
   if (platformExt != null) {
