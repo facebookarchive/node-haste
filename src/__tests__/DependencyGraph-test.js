@@ -3091,6 +3091,7 @@ describe('DependencyGraph', function() {
 
       var dgraph = new DependencyGraph({
         ...defaults,
+        platforms: ['ios', 'android', 'web'],
         roots: [root],
       });
       return getOrderedDependenciesAsJSON(dgraph, '/root/index.ios.js').then(function(deps) {
