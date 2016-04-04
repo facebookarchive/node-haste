@@ -15,6 +15,7 @@ class ModuleCache {
     transformCode,
     depGraphHelpers,
     assetDependencies,
+    moduleOptions,
   }) {
     this._moduleCache = Object.create(null);
     this._packageCache = Object.create(null);
@@ -24,6 +25,8 @@ class ModuleCache {
     this._transformCode = transformCode;
     this._depGraphHelpers = depGraphHelpers;
     this._assetDependencies = assetDependencies;
+    this._moduleOptions = moduleOptions;
+    this._packageModuleMap = new WeakMap();
 
     fastfs.on('change', this._processFileChange.bind(this));
   }
@@ -38,6 +41,7 @@ class ModuleCache {
         extractor: this._extractRequires,
         transformCode: this._transformCode,
         depGraphHelpers: this._depGraphHelpers,
+        options: this._moduleOptions,
       });
     }
     return this._moduleCache[filePath];
@@ -72,22 +76,21 @@ class ModuleCache {
   }
 
   getPackageForModule(module) {
-    // TODO(amasad): use ES6 Map.
-    if (module.__package) {
-      if (this._packageCache[module.__package]) {
-        return this._packageCache[module.__package];
+    if (this._packageModuleMap.has(module)) {
+      const packagePath = this._packageModuleMap.get(module);
+      if (this._packageCache[packagePath]) {
+        return this._packageCache[packagePath];
       } else {
-        delete module.__package;
+        this._packageModuleMap.delete(module);
       }
     }
 
     const packagePath = this._fastfs.closest(module.path, 'package.json');
-
     if (!packagePath) {
       return null;
     }
 
-    module.__package = packagePath;
+    this._packageModuleMap.set(module, packagePath);
     return this.getPackage(packagePath);
   }
 

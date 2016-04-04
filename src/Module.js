@@ -25,6 +25,7 @@ class Module {
     extractor = extractRequires,
     transformCode,
     depGraphHelpers,
+    options,
   }) {
     if (!isAbsolutePath(file)) {
       throw new Error('Expected file to be absolute path but got ' + file);
@@ -39,6 +40,7 @@ class Module {
     this._extractor = extractor;
     this._transformCode = transformCode;
     this._depGraphHelpers = depGraphHelpers;
+    this._options = options;
   }
 
   isHaste() {
@@ -90,7 +92,7 @@ class Module {
   }
 
   getDependencies(transformOptions) {
-    return this.read(transformOptions).then(data => data.dependencies);
+    return this.read(transformOptions).then(({dependencies}) => dependencies);
   }
 
   invalidate() {
@@ -149,7 +151,11 @@ class Module {
               code,
               dependencies = extern ? [] : this._extractor(code).deps.sync,
             } = result;
-            return {...result, dependencies, id, source};
+            if (this._options.cacheTransformResults) {
+              return {...result, dependencies, id, source};
+            } else {
+              return {dependencies};
+            }
           });
         });
       }
