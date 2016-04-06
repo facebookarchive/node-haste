@@ -25,7 +25,7 @@ class Module {
     extractor = extractRequires,
     transformCode,
     depGraphHelpers,
-    options,
+    options = {},
   }) {
     if (!isAbsolutePath(file)) {
       throw new Error('Expected file to be absolute path but got ' + file);
