@@ -389,7 +389,6 @@ describe('Module', () => {
       }});
 
       return module.read().then((result) => {
-        console.log(result);
         expect(result).toEqual({
           dependencies: ['foo', 'bar'],
         });
