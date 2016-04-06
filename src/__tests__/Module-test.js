@@ -395,6 +395,23 @@ describe('Module', () => {
       });
     });
 
+    pit('stores all things if options is undefined', () => {
+      const mockedResult = {
+        code: exampleCode,
+        arbitrary: 'arbitrary',
+        dependencies: ['foo', 'bar'],
+        dependencyOffsets: [12, 764],
+        map: {version: 3},
+        subObject: {foo: 'bar'},
+      };
+      transformCode.mockReturnValue(Promise.resolve(mockedResult));
+      const module = createModule({transformCode, options: undefined});
+
+      return module.read().then((result) => {
+        expect(result).toEqual({ ...mockedResult, source: 'arbitrary(code);'});
+      });
+    });
+
     pit('exposes the transformed code rather than the raw file contents', () => {
       transformCode.mockReturnValue(Promise.resolve({code: exampleCode}));
       const module = createModule({transformCode});
