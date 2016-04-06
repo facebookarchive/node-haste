@@ -2161,6 +2161,46 @@ describe('DependencyGraph', function() {
           ]);
       });
     });
+
+    pit('should work with absolute paths', () => {
+      const root = '/root';
+      fs.__setMockFilesystem({
+        [root.slice(1)]: {
+          'index.js': 'require("/root/arbitrary.js");',
+          'arbitrary.js': '',
+        },
+      });
+
+      var dgraph = new DependencyGraph({
+        ...defaults,
+        roots: [root],
+      });
+      return getOrderedDependenciesAsJSON(dgraph, '/root/index.js').then(function(deps) {
+        expect(deps)
+          .toEqual([
+            {
+              id: '/root/index.js',
+              path: '/root/index.js',
+              dependencies: ['/root/arbitrary.js'],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
+            },
+            {
+              id: '/root/arbitrary.js',
+              path: '/root/arbitrary.js',
+              dependencies: [],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
+            },
+          ]);
+      });
+    });
   });
 
   describe('get sync dependencies (win32)', function() {
@@ -2237,6 +2277,46 @@ describe('DependencyGraph', function() {
               isPolyfill: false,
               resolution: undefined,
               resolveDependency: undefined,
+            },
+          ]);
+      });
+    });
+
+    pit('should work with absolute paths', () => {
+      const root = 'C:\\root';
+      fs.__setMockFilesystem({
+        'root': {
+          'index.js': 'require("C:\\root\\arbitrary.js");',
+          'arbitrary.js': '',
+        },
+      });
+
+      var dgraph = new DependencyGraph({
+        ...defaults,
+        roots: [root],
+      });
+      return getOrderedDependenciesAsJSON(dgraph, 'C:\\root\\index.js').then(function(deps) {
+        expect(deps)
+          .toEqual([
+            {
+              id: 'C:\\root\\index.js',
+              path: 'C:\\root\\index.js',
+              dependencies: ['C:\\root\\arbitrary.js'],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
+            },
+            {
+              id: 'C:\\root\\arbitrary.js',
+              path: 'C:\\root\\arbitrary.js',
+              dependencies: [],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
             },
           ]);
       });
@@ -3244,6 +3324,51 @@ describe('DependencyGraph', function() {
               resolution: undefined,
             },
 
+          ]);
+      });
+    });
+
+    pit('should work with one-character node_modules', () => {
+      const root = '/root';
+      fs.__setMockFilesystem({
+        [root.slice(1)]: {
+          'index.js': 'require("a/index.js");',
+          'node_modules': {
+            'a': {
+              'package.json': '{"name": "a", "version": "1.2.3"}',
+              'index.js': '',
+            },
+          },
+        },
+      });
+
+      var dgraph = new DependencyGraph({
+        ...defaults,
+        roots: [root],
+      });
+      return getOrderedDependenciesAsJSON(dgraph, '/root/index.js').then(function(deps) {
+        expect(deps)
+          .toEqual([
+            {
+              id: '/root/index.js',
+              path: '/root/index.js',
+              dependencies: ['a/index.js'],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
+            },
+            {
+              id: 'a/index.js',
+              path: '/root/node_modules/a/index.js',
+              dependencies: [],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
+            },
           ]);
       });
     });

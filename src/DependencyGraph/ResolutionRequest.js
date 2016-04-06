@@ -94,8 +94,7 @@ class ResolutionRequest {
     };
 
     if (!this._helpers.isNodeModulesDir(fromModule.path)
-        && toModuleName[0] !== '.' &&
-        toModuleName[0] !== '/') {
+        && !(isRelativeImport(toModuleName) || isAbsolutePath(toModuleName))) {
       return this._tryResolve(
         () => this._resolveHasteDependency(fromModule, toModuleName),
         () => this._resolveNodeDependency(fromModule, toModuleName)
@@ -332,12 +331,12 @@ class ResolutionRequest {
   }
 
   _resolveNodeDependency(fromModule, toModuleName) {
-    if (toModuleName[0] === '.' || toModuleName[1] === '/') {
+    if (isRelativeImport(toModuleName) || isAbsolutePath(toModuleName)) {
       return this._resolveFileOrDir(fromModule, toModuleName);
     } else {
       return this._redirectRequire(fromModule, toModuleName).then(
         realModuleName => {
-          if (realModuleName[0] === '.' || realModuleName[1] === '/') {
+          if (isRelativeImport(realModuleName) || isAbsolutePath(realModuleName)) {
             // derive absolute path /.../node_modules/fromModuleDir/realModuleName
             const fromModuleParentIdx = fromModule.path.lastIndexOf('node_modules/') + 13;
             const fromModuleDir = fromModule.path.slice(0, fromModule.path.indexOf('/', fromModuleParentIdx));
@@ -504,6 +503,10 @@ function normalizePath(modulePath) {
 
 function resolveKeyWithPromise([key, promise]) {
   return promise.then(value => [key, value]);
+}
+
+function isRelativeImport(path) {
+  return /^[.][.]?[/]/.test(path);
 }
 
 module.exports = ResolutionRequest;
