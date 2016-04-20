@@ -24,10 +24,10 @@ describe('getPlatformExtension', function() {
   });
 
   it('should optionally accept supported platforms', function() {
-    expect(getPlatformExtension('a.ios.js', ['ios'])).toBe('ios');
-    expect(getPlatformExtension('a.android.js', ['android'])).toBe('android');
-    expect(getPlatformExtension('/b/c/a.ios.js', ['ios', 'android'])).toBe('ios');
-    expect(getPlatformExtension('a.ios.js', ['ubuntu'])).toBe(null);
-    expect(getPlatformExtension('a.ubuntu.js', ['ubuntu'])).toBe('ubuntu');
+    expect(getPlatformExtension('a.ios.js', new Set(['ios']))).toBe('ios');
+    expect(getPlatformExtension('a.android.js', new Set(['android']))).toBe('android');
+    expect(getPlatformExtension('/b/c/a.ios.js', new Set(['ios', 'android']))).toBe('ios');
+    expect(getPlatformExtension('a.ios.js', new Set(['ubuntu']))).toBe(null);
+    expect(getPlatformExtension('a.ubuntu.js', new Set(['ubuntu']))).toBe('ubuntu');
   });
 });

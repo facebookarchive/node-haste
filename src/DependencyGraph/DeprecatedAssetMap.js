@@ -97,7 +97,7 @@ class DeprecatedAssetMap {
         debug('Conflicting assets', name);
       }
 
-      this._map[name] = new AssetModule_DEPRECATED({ file, platforms: this._platforms });
+      this._map[name] = new AssetModule_DEPRECATED({ file }, this._platforms);
     }
   }
 

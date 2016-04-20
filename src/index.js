@@ -66,7 +66,7 @@ class DependencyGraph {
       assetRoots_DEPRECATED: assetRoots_DEPRECATED || [],
       assetExts: assetExts || [],
       providesModuleNodeModules,
-      platforms: platforms || [],
+      platforms: new Set(platforms || []),
       preferNativePlatform: preferNativePlatform || false,
       extensions: extensions || ['js', 'json'],
       mocksPattern,
@@ -120,10 +120,9 @@ class DependencyGraph {
       extractRequires: this._opts.extractRequires,
       transformCode: this._opts.transformCode,
       depGraphHelpers: this._helpers,
-      platforms: this._opts.platforms,
       assetDependencies: this._assetDependencies,
       moduleOptions: this._opts.moduleOptions,
-    });
+    }, this._opts.platfomrs);
 
     this._hasteMap = new HasteMap({
       fastfs: this._fastfs,
@@ -242,7 +241,7 @@ class DependencyGraph {
   _getRequestPlatform(entryPath, platform) {
     if (platform == null) {
       platform = getPlatformExtension(entryPath, this._opts.platforms);
-    } else if (this._opts.platforms.indexOf(platform) === -1) {
+    } else if (!this._opts.platforms.has(platform)) {
       throw new Error('Unrecognized platform: ' + platform);
     }
     return platform;

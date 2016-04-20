@@ -26,7 +26,6 @@ class Module {
     transformCode,
     depGraphHelpers,
     options,
-    platforms,
   }) {
     if (!isAbsolutePath(file)) {
       throw new Error('Expected file to be absolute path but got ' + file);
@@ -42,7 +41,6 @@ class Module {
     this._transformCode = transformCode;
     this._depGraphHelpers = depGraphHelpers;
     this._options = options;
-    this._platforms = platforms;
   }
 
   isHaste() {
