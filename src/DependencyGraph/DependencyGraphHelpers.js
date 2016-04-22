@@ -42,6 +42,10 @@ class DependencyGraphHelpers {
   extname(name) {
     return path.extname(name).substr(1);
   }
+
+  isGlob(file) {
+    return file.indexOf('*') !== -1;
+  }
 }
 
 module.exports = DependencyGraphHelpers;

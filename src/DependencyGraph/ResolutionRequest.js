@@ -375,7 +375,7 @@ class ResolutionRequest {
 
   _loadAsFile(potentialModulePath, fromModule, toModule) {
     return Promise.resolve().then(() => {
-      if (this._helpers.isAssetFile(potentialModulePath)) {
+      if (this._helpers.isAssetFile(potentialModulePath) && !this._helpers.isGlob(potentialModulePath)) {
         const dirname = path.dirname(potentialModulePath);
         if (!this._fastfs.dirExists(dirname)) {
           throw new UnableToResolveError(
@@ -403,6 +403,10 @@ class ResolutionRequest {
         if (assetFile) {
           return this._moduleCache.getAssetModule(assetFile);
         }
+      }
+
+      if (this._helpers.isGlob(potentialModulePath)) {
+        return this._moduleCache.getGlobModule(potentialModulePath);
       }
 
       let file;

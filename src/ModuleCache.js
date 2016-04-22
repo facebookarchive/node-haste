@@ -3,6 +3,7 @@
 const AssetModule = require('./AssetModule');
 const Package = require('./Package');
 const Module = require('./Module');
+const GlobModule = require('./GlobModule');
 const Polyfill = require('./Polyfill');
 const path = require('./fastpath');
 
@@ -49,6 +50,22 @@ class ModuleCache {
 
   getAllModules() {
     return this._moduleCache;
+  }
+
+  getGlobModule(filePath) {
+    if (!this._moduleCache[filePath]) {
+      this._moduleCache[filePath] = new GlobModule({
+        file: filePath,
+        fastfs: this._fastfs,
+        moduleCache: this,
+        cache: this._cache,
+        extractor: this._extractRequires,
+        transformCode: this._transformCode,
+        depGraphHelpers: this._depGraphHelpers,
+        options: this._moduleOptions,
+      });
+    }
+    return this._moduleCache[filePath];
   }
 
   getAssetModule(filePath) {
