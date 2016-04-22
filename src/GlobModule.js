@@ -45,14 +45,15 @@ class GlobModule extends Module {
 
   read(transformOptions) {
     const [, dir, file] = this.path.match(/(.*)\/([^/]+)$/);
-    const pattern = RegExp.escape(file).replace('\\*', '\/([^/.]+)') + '$';
+    const pattern = '^' + RegExp.escape(file).replace('\\*', '([^/.]+)') + '$';
+    const filenamePattern = /\/([^/.]+).[^/.]+$/
     const matches = this._fastfs.matches(dir, pattern);
     const dependencies = matches.map(x => {
       return '.' + x.slice(dir.length);
     });
 
     const source = dependencies.map(name => {
-      const [, match] = name.match(pattern);
+      const [, match] = name.match(filenamePattern);
       return `import ${match} from '${name}';\nexport {${match}}`;
     })
     .join('\n');
