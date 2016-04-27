@@ -35,6 +35,7 @@ class ResolutionRequest {
     moduleCache,
     fastfs,
     shouldThrowOnUnresolvedErrors,
+    extraNodeModules,
   }) {
     this._platform = platform;
     this._preferNativePlatform = preferNativePlatform;
@@ -45,6 +46,7 @@ class ResolutionRequest {
     this._moduleCache = moduleCache;
     this._fastfs = fastfs;
     this._shouldThrowOnUnresolvedErrors = shouldThrowOnUnresolvedErrors;
+    this._extraNodeModules = extraNodeModules;
     this._resetResolutionCache();
   }
 
@@ -351,6 +353,14 @@ class ResolutionRequest {
             searchQueue.push(
               path.join(currDir, 'node_modules', realModuleName)
             );
+          }
+
+          if (this._extraNodeModules) {
+            const bits = toModuleName.split('/');
+            const packageName = bits[0];
+            if (this._extraNodeModules[packageName]) {
+              searchQueue.push(this._extraNodeModules[packageName]);
+            }
           }
 
           let p = Promise.reject(new UnableToResolveError(
