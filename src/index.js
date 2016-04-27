@@ -56,6 +56,7 @@ class DependencyGraph {
     enableAssetMap,
     assetDependencies,
     moduleOptions,
+    extraNodeModules,
   }) {
     this._opts = {
       activity: activity || defaultActivity,
@@ -76,6 +77,7 @@ class DependencyGraph {
       moduleOptions: moduleOptions || {
         cacheTransformResults: true,
       },
+      extraNodeModules,
     };
     this._cache = cache;
     this._assetDependencies = assetDependencies;
@@ -214,6 +216,7 @@ class DependencyGraph {
         moduleCache: this._moduleCache,
         fastfs: this._fastfs,
         shouldThrowOnUnresolvedErrors: this._opts.shouldThrowOnUnresolvedErrors,
+        extraNodeModules: this._opts.extraNodeModules,
       });
 
       const response = new ResolutionResponse({transformOptions});
