@@ -2445,6 +2445,53 @@ describe('DependencyGraph', function() {
           ]);
       });
     });
+
+    pit('should be able to resolve paths within `extraNodeModules`', () => {
+      const root = '/root';
+      fs.__setMockFilesystem({
+        [root.slice(1)]: {
+          'index.js': 'require("bar/lib/foo")',
+          'provides-bar': {
+            'package.json': '{}',
+            'lib': {'foo.js': ''},
+          },
+        },
+      });
+
+      var dgraph = new DependencyGraph({
+        ...defaults,
+        roots: [root],
+        extraNodeModules: {
+          'bar': root + '/provides-bar',
+        },
+      });
+
+      return getOrderedDependenciesAsJSON(dgraph, '/root/index.js').then(deps => {
+        expect(deps)
+          .toEqual([
+            {
+              id: '/root/index.js',
+              path: '/root/index.js',
+              dependencies: ['bar/lib/foo'],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
+            },
+            {
+              id: '/root/provides-bar/lib/foo.js',
+              path: '/root/provides-bar/lib/foo.js',
+              dependencies: [],
+              isAsset: false,
+              isAsset_DEPRECATED: false,
+              isJSON: false,
+              isPolyfill: false,
+              resolution: undefined,
+            },
+          ]);
+      });
+    });
   });
 
   describe('get sync dependencies (win32)', function() {

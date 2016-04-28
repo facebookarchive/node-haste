@@ -359,7 +359,8 @@ class ResolutionRequest {
             const bits = toModuleName.split('/');
             const packageName = bits[0];
             if (this._extraNodeModules[packageName]) {
-              searchQueue.push(this._extraNodeModules[packageName]);
+              bits[0] = this._extraNodeModules[packageName];
+              searchQueue.push(path.join.apply(path, bits));
             }
           }
 
