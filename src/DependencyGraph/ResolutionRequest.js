@@ -16,13 +16,6 @@ const path = require('../fastpath');
 const realPath = require('path');
 const isAbsolutePath = require('absolute-path');
 const getAssetDataFromName = require('../lib/getAssetDataFromName');
-const throat = require('throat')(Promise);
-
-const MAX_CONCURRENT_FILE_READS = 32;
-const getDependencies = throat(
-  MAX_CONCURRENT_FILE_READS,
-  (module, transformOptions) => module.getDependencies(transformOptions)
-);
 
 class ResolutionRequest {
   constructor({
@@ -129,7 +122,7 @@ class ResolutionRequest {
       let finishedModules = 0;
 
       const resolveDependencies = module =>
-        getDependencies(module, transformOptions)
+        module.getDependencies(transformOptions)
           .then(dependencyNames =>
             Promise.all(
               dependencyNames.map(name => this.resolveDependency(module, name))
