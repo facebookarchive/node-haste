@@ -10,6 +10,7 @@
 
 jest
   .dontMock('absolute-path')
+  .dontMock('../../lib/timeoutableAsync')
   .dontMock('../');
 
 jest

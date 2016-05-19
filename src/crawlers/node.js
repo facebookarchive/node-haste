@@ -1,12 +1,12 @@
 'use strict';
 
-const denodeify = require('denodeify');
 const debug = require('debug')('ReactNativePackager:DependencyGraph');
 const fs = require('graceful-fs');
 const path = require('../fastpath');
 
-const readDir = denodeify(fs.readdir);
-const stat = denodeify(fs.stat);
+const timeoutableAsync = require('../lib/timeoutableAsync');
+const readDir = timeoutableAsync.timeoutableDenodeify(fs.readdir, 5000);
+const stat = timeoutableAsync.timeoutableDenodeify(fs.stat, 5000);
 
 function nodeRecReadDir(roots, {ignore, exts}) {
   const queue = roots.slice();

@@ -8,12 +8,13 @@
  */
 'use strict';
 
-const denodeify = require('denodeify');
 const crypto = require('crypto');
 const fs = require('graceful-fs');
 const isAbsolutePath = require('absolute-path');
 const path = require('../fastpath');
 const tmpDir = require('os').tmpDir();
+const timeoutableAsync = require('../lib/timeoutableAsync');
+const stat = timeoutableAsync.timeoutableDenodeify(fs.stat, 5000);
 
 function getObjectValues(object) {
   return Object.keys(object).map(key => object[key]);
@@ -90,7 +91,7 @@ class Cache {
     record.data[field] = loaderPromise
       .then(data => Promise.all([
         data,
-        denodeify(fs.stat)(filepath),
+        stat(filepath),
       ]))
       .then(([data, stat]) => {
         this._persistEventually();
@@ -152,7 +153,9 @@ class Cache {
           json[key].metadata = data[key].metadata;
           json[key].data = value.data;
         });
-        return denodeify(fs.writeFile)(cacheFilepath, JSON.stringify(json));
+        // denodified here fo testing
+        const writeFile = timeoutableAsync.timeoutableDenodeify(fs.writeFile, 5000);
+        return writeFile(cacheFilepath, JSON.stringify(json));
       })
       .catch(e => console.error(
         '[node-haste] Encountered an error while persisting cache:\n%s',
