@@ -8,14 +8,16 @@
  */
 'use strict';
 
-const denodeify = require('denodeify');
 const {EventEmitter} = require('events');
 
 const fs = require('graceful-fs');
 const path = require('./fastpath');
+const timeoutableAsync = require('./lib/timeoutableAsync');
 
-const readFile = denodeify(fs.readFile);
-const stat = denodeify(fs.stat);
+const readFile = timeoutableAsync.timeoutableDenodeify(fs.readFile, 5000);
+const stat = timeoutableAsync.timeoutableDenodeify(fs.stat, 5000);
+const openAsync = timeoutableAsync.timeoutableFunction(fs.open, 5000);
+const readAsync = timeoutableAsync.timeoutableFunction(fs.read, 5000);
 
 const NOT_FOUND_IN_ROOTS = 'NotFoundInRootsError';
 
@@ -305,7 +307,7 @@ class File {
 
 function readWhile(filePath, predicate) {
   return new Promise((resolve, reject) => {
-    fs.open(filePath, 'r', (openError, fd) => {
+    openAsync(filePath, 'r', (openError, fd) => {
       if (openError) {
         reject(openError);
         return;
@@ -328,7 +330,7 @@ function readWhile(filePath, predicate) {
 }
 
 function read(fd, buffer, callback) {
-  fs.read(fd, buffer, 0, buffer.length, -1, callback);
+  readAsync(fd, buffer, 0, buffer.length, -1, callback);
 }
 
 function close(fd, error, result, complete, callback) {
