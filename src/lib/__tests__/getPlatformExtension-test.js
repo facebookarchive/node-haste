@@ -22,4 +22,12 @@ describe('getPlatformExtension', function() {
     expect(getPlatformExtension('/b/c/a@1.5x.lol.png')).toBe(null);
     expect(getPlatformExtension('/b/c/a.lol.png')).toBe(null);
   });
+
+  it('should optionally accept supported platforms', function() {
+    expect(getPlatformExtension('a.ios.js', new Set(['ios']))).toBe('ios');
+    expect(getPlatformExtension('a.android.js', new Set(['android']))).toBe('android');
+    expect(getPlatformExtension('/b/c/a.ios.js', new Set(['ios', 'android']))).toBe('ios');
+    expect(getPlatformExtension('a.ios.js', new Set(['ubuntu']))).toBe(null);
+    expect(getPlatformExtension('a.ubuntu.js', new Set(['ubuntu']))).toBe('ubuntu');
+  });
 });

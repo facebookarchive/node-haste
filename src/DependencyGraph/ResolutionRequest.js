@@ -20,6 +20,7 @@ const getAssetDataFromName = require('../lib/getAssetDataFromName');
 class ResolutionRequest {
   constructor({
     platform,
+    platforms,
     preferNativePlatform,
     entryPath,
     hasteMap,
@@ -31,6 +32,7 @@ class ResolutionRequest {
     extraNodeModules,
   }) {
     this._platform = platform;
+    this._platforms = platforms;
     this._preferNativePlatform = preferNativePlatform;
     this._entryPath = entryPath;
     this._hasteMap = hasteMap;
@@ -389,7 +391,7 @@ class ResolutionRequest {
           );
         }
 
-        const {name, type} = getAssetDataFromName(potentialModulePath);
+        const {name, type} = getAssetDataFromName(potentialModulePath, this._platforms);
 
         let pattern = '^' + name + '(@[\\d\\.]+x)?';
         if (this._platform != null) {

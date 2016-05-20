@@ -16,7 +16,7 @@ class ModuleCache {
     depGraphHelpers,
     assetDependencies,
     moduleOptions,
-  }) {
+  }, platforms) {
     this._moduleCache = Object.create(null);
     this._packageCache = Object.create(null);
     this._fastfs = fastfs;
@@ -24,6 +24,7 @@ class ModuleCache {
     this._extractRequires = extractRequires;
     this._transformCode = transformCode;
     this._depGraphHelpers = depGraphHelpers;
+    this._platforms = platforms;
     this._assetDependencies = assetDependencies;
     this._moduleOptions = moduleOptions;
     this._packageModuleMap = new WeakMap();
@@ -59,7 +60,7 @@ class ModuleCache {
         moduleCache: this,
         cache: this._cache,
         dependencies: this._assetDependencies,
-      });
+      }, this._platforms);
     }
     return this._moduleCache[filePath];
   }
