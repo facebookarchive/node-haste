@@ -15,7 +15,6 @@ jest
   .dontMock('../lib/extractRequires')
   .dontMock('../lib/replacePatterns')
   .dontMock('../DependencyGraph/docblock')
-  .dontMock('../lib/timeoutableAsync')
   .dontMock('../Module');
 
 jest
