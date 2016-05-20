@@ -1,6 +1,6 @@
 {
   "name": "node-haste",
-  "version": "2.12.0-alpha.0",
+  "version": "2.12.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/facebook/node-haste.git"
