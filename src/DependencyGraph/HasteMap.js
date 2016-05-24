@@ -136,7 +136,7 @@ class HasteMap {
         `  Duplicate module name: ${name}\n` +
         `  Paths: ${mod.path} collides with ${existingModule.path}\n\n` +
         `This error is caused by a @providesModule declaration ` +
-        `with the same name accross two different files.`
+        `with the same name across two different files.`
       );
     }
 

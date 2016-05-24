@@ -1274,7 +1274,7 @@ describe('DependencyGraph', function() {
           `  Duplicate module name: index\n` +
           `  Paths: /root/b.js collides with /root/index.js\n\n` +
           `This error is caused by a @providesModule declaration ` +
-          `with the same name accross two different files.`
+          `with the same name across two different files.`
         );
         expect(err.type).toEqual('DependencyGraphError');
       });
