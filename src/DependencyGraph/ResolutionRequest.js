@@ -343,10 +343,6 @@ class ResolutionRequest {
 
           const searchQueue = [];
 
-          if (process.env.NODE_PATH) {
-            searchQueue.push(path.join(process.env.NODE_PATH, realModuleName));
-          }
-
           for (let currDir = path.dirname(fromModule.path);
                currDir !== realPath.parse(fromModule.path).root;
                currDir = path.dirname(currDir)) {
@@ -362,6 +358,10 @@ class ResolutionRequest {
               bits[0] = this._extraNodeModules[packageName];
               searchQueue.push(path.join.apply(path, bits));
             }
+          }
+
+          if (process.env.NODE_PATH) {
+            searchQueue.push(path.join(process.env.NODE_PATH, realModuleName));
           }
 
           let p = Promise.reject(new UnableToResolveError(
