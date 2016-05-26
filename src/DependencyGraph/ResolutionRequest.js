@@ -342,6 +342,11 @@ class ResolutionRequest {
           }
 
           const searchQueue = [];
+
+          if (process.env.NODE_PATH) {
+            searchQueue.push(path.join(process.env.NODE_PATH, realModuleName));
+          }
+
           for (let currDir = path.dirname(fromModule.path);
                currDir !== realPath.parse(fromModule.path).root;
                currDir = path.dirname(currDir)) {
