@@ -18,11 +18,12 @@ describe('extractRequires', () => {
     const code = `
       import module1 from 'module1';
       const module2 = require('module2');
+      const module3 = require(\`module3\`);
     `;
 
     expect(extractRequires(code)).toEqual({
       code,
-      deps: {sync: ['module1', 'module2']},
+      deps: {sync: ['module1', 'module2', 'module3']},
     });
   });
 
