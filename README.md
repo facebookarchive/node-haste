@@ -28,13 +28,14 @@ const graph = new NodeHaste({
   roots: ['/path/to/node-haste/lib'],
   cache,
   fileWatcher,
+  providesModuleNodeModules: [],
   // Don't throw on unresolved errors; node-haste currently doesn't support
   // native node modules, for example.
   shouldThrowOnUnresolvedErrors: () => false,
 });
 
 // Find all recursive dependencies of `lib/index.js`
-graph.getDependencies('/path/to/node-haste/lib/index.js')
+graph.getDependencies({entryPath: '/path/to/node-haste/lib/index.js'})
   .then(
     response => console.log(response.dependencies.map(dep => dep.path)),
     error => console.error(error)
