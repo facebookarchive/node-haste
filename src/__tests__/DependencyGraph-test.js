@@ -23,8 +23,8 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 describe('DependencyGraph', function() {
   let defaults;
 
-  function getOrderedDependenciesAsJSON(dgraph, entryPath, platform, recursive = true) {
-    return dgraph.getDependencies({entryPath, platform, recursive})
+  function getOrderedDependenciesAsJSON(dgraph, entryPath, platform, recursive = true, infix) {
+    return dgraph.getDependencies({entryPath, platform, recursive, infix})
       .then(response => response.finalize())
       .then(({ dependencies }) => Promise.all(dependencies.map(dep => Promise.all([
         dep.getName(),
@@ -104,6 +104,54 @@ describe('DependencyGraph', function() {
       platforms: ['ios', 'android'],
       shouldThrowOnUnresolvedErrors: () => false,
     };
+  });
+
+  pit('should work with multiple infix (node)', function() {
+    var root = '/root';
+    fs.__setMockFilesystem({
+      'root': {
+        'index.js': `
+   /!**
+   * @providesModule index
+   *!/
+   require('./a');
+   `,
+        'a.lp.js': '',
+        'a.android.js': '',
+        'a.matrix.android.js': '',
+        'a.js': '',
+      },
+    });
+
+    var dgraph = new DependencyGraph({
+      ...defaults,
+      roots: [root],
+    });
+    return getOrderedDependenciesAsJSON(dgraph, '/root/index.js', 'android', '', 'matrix').then(function(deps) {
+      expect(deps)
+        .toEqual([
+          {
+            id: 'index',
+            path: '/root/index.js',
+            dependencies: ['./a'],
+            isAsset: false,
+            isAsset_DEPRECATED: false,
+            isJSON: false,
+            isPolyfill: false,
+            resolution: undefined,
+          },
+          {
+            id: '/root/a.matrix.android.js',
+            path: '/root/a.matrix.android.js',
+            dependencies: [],
+            isAsset: false,
+            isAsset_DEPRECATED: false,
+            isJSON: false,
+            isPolyfill: false,
+            resolution: undefined,
+          },
+        ]);
+    });
   });
 
   describe('get sync dependencies (posix)', function() {

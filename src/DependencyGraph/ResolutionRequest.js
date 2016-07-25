@@ -30,6 +30,7 @@ class ResolutionRequest {
     fastfs,
     shouldThrowOnUnresolvedErrors,
     extraNodeModules,
+    infix
   }) {
     this._platform = platform;
     this._platforms = platforms;
@@ -43,6 +44,7 @@ class ResolutionRequest {
     this._shouldThrowOnUnresolvedErrors = shouldThrowOnUnresolvedErrors;
     this._extraNodeModules = extraNodeModules;
     this._resetResolutionCache();
+    this.infix = infix;
   }
 
   _tryResolve(action, secondaryAction) {
@@ -414,9 +416,10 @@ class ResolutionRequest {
       let file;
       if (this._fastfs.fileExists(potentialModulePath)) {
         file = potentialModulePath;
-      } else if (this._platform != null &&
-                 this._fastfs.fileExists(potentialModulePath + '.' + this._platform + '.js')) {
+      } else if (this._platform != null && this.infix === null && this._fastfs.fileExists(potentialModulePath + '.' + this._platform + '.js')) {
         file = potentialModulePath + '.' + this._platform + '.js';
+      } else if (this._platform && this.infix && this._fastfs.fileExists(potentialModulePath + '.' + this.infix + '.' + this._platform + '.js')) {
+        file = potentialModulePath + '.' + this.infix + '.' + this._platform + '.js';
       } else if (this._preferNativePlatform &&
                  this._fastfs.fileExists(potentialModulePath + '.native.js')) {
         file = potentialModulePath + '.native.js';
