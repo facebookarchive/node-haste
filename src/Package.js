@@ -6,7 +6,7 @@ const path = require('./fastpath');
 class Package {
 
   constructor({ file, fastfs, cache }) {
-    this.path = file;
+    this.path = path.resolve(file);
     this.root = path.dirname(this.path);
     this._fastfs = fastfs;
     this.type = 'Package';
@@ -59,7 +59,11 @@ class Package {
       }
 
       if (name[0] !== '/') {
-        return replacements[name] || name;
+        const replacement = replacements[name];
+        // support exclude with "someDependency": false
+        return replacement === false
+          ? false
+          : replacement || name;
       }
 
       if (!isAbsolutePath(name)) {
@@ -67,9 +71,21 @@ class Package {
       }
 
       const relPath = './' + path.relative(this.root, name);
-      const redirect = replacements[relPath] ||
-              replacements[relPath + '.js'] ||
-              replacements[relPath + '.json'];
+      let redirect = replacements[relPath];
+
+      // false is a valid value
+      if (redirect == null) {
+        redirect = replacements[relPath + '.js'];
+        if (redirect == null) {
+          redirect = replacements[relPath + '.json'];
+        }
+      }
+
+      // support exclude with "./someFile": false
+      if (redirect === false) {
+        return false;
+      }
+
       if (redirect) {
         return path.join(
           this.root,

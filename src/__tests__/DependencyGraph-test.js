@@ -2068,6 +2068,115 @@ describe('DependencyGraph', function() {
             ]);
         });
       });
+
+      pit('should support browser exclude of a package ("' + fieldName + '")', function() {
+        var root = '/root';
+        fs.__setMockFilesystem({
+          'root': {
+            'index.js': [
+              '/**',
+              ' * @providesModule index',
+              ' */',
+              'require("aPackage")',
+            ].join('\n'),
+            'aPackage': {
+              'package.json': JSON.stringify(replaceBrowserField({
+                name: 'aPackage',
+                browser: {
+                  'booga': false,
+                },
+              }, fieldName)),
+              'index.js': 'require("booga")',
+              'booga': {
+                'package.json': JSON.stringify({
+                  'name': 'booga',
+                }),
+                'index.js': 'some node code',
+              },
+            },
+          },
+        });
+
+        const dgraph = new DependencyGraph({
+          ...defaults,
+          roots: [root],
+        });
+        return getOrderedDependenciesAsJSON(dgraph, '/root/index.js').then(function(deps) {
+          expect(deps)
+            .toEqual([
+              { id: 'index',
+                path: '/root/index.js',
+                dependencies: ['aPackage'],
+                isAsset: false,
+                isAsset_DEPRECATED: false,
+                isJSON: false,
+                isPolyfill: false,
+                resolution: undefined,
+              },
+              { id: 'aPackage/index.js',
+                path: '/root/aPackage/index.js',
+                dependencies: ['booga'],
+                isAsset: false,
+                isAsset_DEPRECATED: false,
+                isJSON: false,
+                isPolyfill: false,
+                resolution: undefined,
+              },
+            ]);
+        });
+      });
+
+      pit('should support browser exclude of a file ("' + fieldName + '")', function() {
+        var root = '/root';
+        fs.__setMockFilesystem({
+          'root': {
+            'index.js': [
+              '/**',
+              ' * @providesModule index',
+              ' */',
+              'require("aPackage")',
+            ].join('\n'),
+            'aPackage': {
+              'package.json': JSON.stringify(replaceBrowserField({
+                name: 'aPackage',
+                browser: {
+                  './booga.js': false,
+                },
+              }, fieldName)),
+              'index.js': 'require("./booga")',
+              'booga.js': 'some node code',
+            },
+          },
+        });
+
+        const dgraph = new DependencyGraph({
+          ...defaults,
+          roots: [root],
+        });
+        return getOrderedDependenciesAsJSON(dgraph, '/root/index.js').then(function(deps) {
+          expect(deps)
+            .toEqual([
+              { id: 'index',
+                path: '/root/index.js',
+                dependencies: ['aPackage'],
+                isAsset: false,
+                isAsset_DEPRECATED: false,
+                isJSON: false,
+                isPolyfill: false,
+                resolution: undefined,
+              },
+              { id: 'aPackage/index.js',
+                path: '/root/aPackage/index.js',
+                dependencies: ['./booga'],
+                isAsset: false,
+                isAsset_DEPRECATED: false,
+                isJSON: false,
+                isPolyfill: false,
+                resolution: undefined,
+              },
+            ]);
+        });
+      });
     }
 
     pit('should fall back to browser mapping from react-native mapping', function() {
