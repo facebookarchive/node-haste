@@ -1,4 +1,4 @@
-# node-haste [![Build Status](https://travis-ci.org/facebook/node-haste.png?branch=master)](https://travis-ci.org/facebook/node-haste)
+# node-haste [![Build Status](https://travis-ci.org/facebook/node-haste.svg?branch=master)](https://travis-ci.org/facebook/node-haste)
 
 node-haste is a dependency management system for static resources for node.js. It provides the ability to statically resolve JavaScript module dependencies both for node module resolution and Facebook's haste module system.
 
