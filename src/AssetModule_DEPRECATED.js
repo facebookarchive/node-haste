@@ -9,15 +9,12 @@ class AssetModule_DEPRECATED extends Module {
     const {resolution, name} = getAssetDataFromName(this.path, platforms);
     this.resolution = resolution;
     this.name = name;
+    this.moduleName = 'image!' + name;
     this.platforms = platforms;
   }
 
   isHaste() {
     return Promise.resolve(false);
-  }
-
-  getName() {
-    return Promise.resolve(`image!${this.name}`);
   }
 
   getDependencies() {

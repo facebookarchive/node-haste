@@ -41,6 +41,12 @@ class Module {
     this._transformCode = transformCode;
     this._depGraphHelpers = depGraphHelpers;
     this._options = options;
+
+    if (!this.moduleName && !this.isPolyfill() && !this.isAsset_DEPRECATED()) {
+      this.getName().then(name => {
+        this.moduleName = name;
+      });
+    }
   }
 
   isHaste() {
@@ -60,6 +66,9 @@ class Module {
   }
 
   getName() {
+    if (this.moduleName) {
+      return Promise.resolve(this.moduleName);
+    }
     return this._cache.get(
       this.path,
       'name',
@@ -135,7 +144,8 @@ class Module {
         return Promise.all([
           fileContentPromise,
           this._readDocBlock(fileContentPromise),
-        ]).then(([source, {id, moduleDocBlock}]) => {
+          this.getName(),
+        ]).then(([source, {id, moduleDocBlock}, moudleName]) => {
           // Ignore requires in JSON files or generated code. An example of this
           // is prebuilt files like the SourceMap library.
           const extern = this.isJSON() || 'extern' in moduleDocBlock;
@@ -146,6 +156,10 @@ class Module {
           const codePromise = transformCode
               ? transformCode(this, source, transformOptions)
               : Promise.resolve({code: source});
+
+          if (!this.moduleName && moudleName) {
+              this.moduleName = moudleName
+          }
           return codePromise.then(result => {
             const {
               code,
