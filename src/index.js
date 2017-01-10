@@ -204,6 +204,7 @@ class DependencyGraph {
     transformOptions,
     onProgress,
     recursive = true,
+    infix
   }) {
     return this.load().then(() => {
       platform = this._getRequestPlatform(entryPath, platform);
@@ -220,6 +221,7 @@ class DependencyGraph {
         fastfs: this._fastfs,
         shouldThrowOnUnresolvedErrors: this._opts.shouldThrowOnUnresolvedErrors,
         extraNodeModules: this._opts.extraNodeModules,
+        infix
       });
 
       const response = new ResolutionResponse({transformOptions});
